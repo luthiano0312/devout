@@ -1,383 +1,182 @@
 # Contrato de orquestração MVP — OpenClaw + Pi Agent
 
-**Versão:** 1.0 — decisões consolidadas em 16/11/2026  
-**Situação:** **contrato de desenho aprovado para orientar a implementação; ainda não implementado nem validado integralmente**.  
-**Próxima etapa:** construir e testar incrementalmente o MVP (Etapa B) em **Windows nativo**, com **uma task e um repositório descartável**.  
-**Natureza deste documento:** separa **[APROVADO]** (decisões tomadas), **[VALIDAR]** (comportamentos que dependem de testes) e **[DETALHAR]** (parâmetros ou formatos que ainda não foram fechados). Exemplos de comandos, estruturas e JSON são **ilustrativos**, salvo quando expressamente definidos como requisito.
+**Versão:** rascunho 0.1 · **Data:** 2026-11-16  
+**Situação:** especificação inicial; recomendações técnicas **não equivalem a aprovação do usuário**.  
+**Escopo:** Etapa A — uma task em projeto descartável; nenhuma alteração nas skills ou implantação de orquestrador nesta etapa.
 
-## 1. Objetivo, limites e fontes
+## 1. Fontes e precedência
 
-**Objetivo imediato.** Automatizar uma task aprovada do workflow existente: `implementador → revisor → [corretor → revisor]*`, com troca real de processos/sessões Pi entre papéis, revisão em duas fases, evidências persistidas, gates determinísticos e transições oficiais controladas pelo OpenClaw. Encerrar o MVP na **aprovação técnica**, sem realizar os commits oficiais.
+1. Decisões aprovadas e evidências: `01-registro-integracao-openclaw-pi-e-decisoes.md` e `contexto-projeto-automacao-workflow-atualizado.md`.
+2. Regras concretas atuais: `my-skills/.agents/skills/implement/` e `my-skills/.agents/skills/plan/` na branch `main`, consultadas em 16/11/2026. Antes de codificar, fixar a revisão Git consultada.
+3. Protocolo: [Pi RPC](https://docs.pi.dev/latest/rpc), [comandos](https://docs.pi.dev/latest/rpc-commands) e [eventos](https://docs.pi.dev/latest/json). O comportamento da versão **instalada** prevalece sobre documentação de `latest`, após teste de compatibilidade.
 
-**Fontes a preservar:**
+Em caso de divergência entre plano aprovado, registro e Git: **pausar para reconciliação**; o estado operacional não os substitui.
 
-1. `contexto-projeto-automacao-workflow-atualizado.md` — desenho e decisões conceituais do workflow.
-2. `01-registro-integracao-openclaw-pi-e-decisoes.md` — evidências da prova RPC e decisões de integração, incluindo E14.
-3. `02-inicio-proxima-conversa-mvp-orquestrador(1).md` — briefing/escopo da Etapa A.
-4. Repositório [`luthiano0312/my-skills`](https://github.com/luthiano0312/my-skills), especialmente `.agents/skills/implement/` (skill, `references/revisor.md`, `references/implementador.md`, `references/corretor.md`, `scripts/review_inputs.py`, `scripts/update_registro.py`) e `.agents/skills/plan/`. Conteúdo inspecionado na branch `main` durante a especificação; **fixar SHA de commit e revalidar antes de adaptar o código**.
-5. Protocolo e documentação do Pi RPC: https://docs.pi.dev/latest/rpc e documentação da versão instalada. Comportamento real do Windows e do Pi instalado será testado; não inferir de documentação `latest` que tudo já funciona na versão local.
+## 2. Decisões já aprovadas (não reabrir)
 
-**Fora do MVP imediato:** Git Gateway, commits oficiais, merge/push, automação de todas as tasks do marco, integração na `main`, migração completa da `plan`, paralelismo, WSL2/Docker, isolamento forte Windows, serviço de produção e arquitetura genérica de multiagentes. O desenho futuro mantém branches por marco/task, **dois commits oficiais** da task e integração sem squash/force push, sincronização remota após aprovação técnica e autorização humana explícita para `main` — mas não serão implementados neste ciclo.
+- Windows nativo; OpenClaw orquestra; Pi executa via RPC; Node.js pode controlar pipes. Sem Docker/WSL2.
+- **No máximo um Pi ativo por vez.** Papéis sempre em processos/sessões novos e sequenciais. O revisor executa suas fases 1 e 2 **na mesma sessão de revisão**, com um gate entre elas.
+- Só uma task aprovada no primeiro ciclo; sem automação de marco inteiro nem Git Gateway agora.
+- `registro.md` é status oficial; somente o controlador autorizado pelo OpenClaw atualiza estados. Resultado textual ou código de saída do Pi nunca constitui aprovação.
+- Manter até três correções completas/quatro revisões, achados `bloqueador` e `importante` obrigatórios, `melhoria opcional` não bloqueante, e notificação de **todos** os achados.
+- Mitigação da leitura antecipada com `review_inputs.py`, instruções e `pi-file-permissions`; **não** afirmar isolamento real. Exposição efetiva na fase 1 interrompe o fluxo.
+- Um reinício automático **adicional**, no máximo, apenas para falha local pré-commits e descarte comprovadamente seguro de uma tentativa isolada; nunca descartar alterações preexistentes, trabalho de terceiros ou commits.
+- Commits oficiais, branches de marco/task, sincronização remota, homologação e autorização para `main` permanecem no desenho-alvo, mas fora deste contrato executável inicial.
 
-## 2. Decisões principais — [APROVADO]
+## 3. Responsabilidades e fronteiras — proposta
 
-| Tema | Decisão consolidada |
-|---|---|
-| Plataforma | Windows 10/11 nativo. OpenClaw orquestra; Pi executa via RPC; Node.js faz a integração. |
-| Unidade de automação | **Uma task aprovada por vez** em projeto descartável. |
-| Topologia | **Alternativa A:** um **Role Runner temporário por papel**. Sem supervisor Node residente, Named Pipe ou HTTP permanente no MVP. |
-| Sequência | **No máximo um processo Pi do workflow ativo por vez**; novos processos e históricos independentes entre implementador, revisor e corretor. |
-| Revisão | **Dois prompts RPC na mesma sessão Pi do revisor**, com gate automático entre fase 1 e fase 2; sem autorização humana intermediária. |
-| Invocação | OpenClaw chama Role Runner por `exec` assíncrono usando `yieldMs`; acompanha via mecanismos `process` e arquivos operacionais. |
-| Encerramento forçado | Após tentativa normal, usar **`taskkill /T /F`** no Windows, com identificação adequada do alvo e confirmação posterior; testar em ambiente descartável. |
-| Exclusividade | **Gate de transição no OpenClaw + trava global mínima entre Runners**. Chamada duplicada não pode lançar outro Pi. |
-| Retomada técnica | **No máximo uma reinicialização automática adicional na implementação inicial**, somente com baseline e descarte comprovadamente seguros. |
-| Falhas em revisão/correção | **Pausar e reconciliar**; não reiniciar automaticamente esses papéis no MVP. |
-| Persistência | Arquivos: `registro.md` oficial, estado operacional pequeno por task e diretórios de execução por `runId`. |
-| Coordenação de gravações | Intenção de transição → atualização validada do registro → confirmação; reconciliação idempotente após falha. |
-| Gates | Estruturais mínimos, com verificações técnicas adicionais apenas quando exigidas pela task/projeto. |
-| Testes | Fluxos principais com OpenClaw + Pi reais; situações excepcionais majoritariamente simuladas; testes reais específicos de cancelamento/encerramento no Windows. |
-
-**Princípio invariável:** nenhum `exitCode=0`, retorno `success=true`, `prompt accepted`, mensagem do modelo ou arquivo isolado implica aprovação da task. O controlador valida resultados e evidências antes de transições.
-
-## 3. Arquitetura e responsabilidades — [APROVADO]
-
-```text
-OpenClaw (orquestrador: agenda papéis, valida gates, decide transições)
-   |
-   | exec com yieldMs; acompanha por process.* e arquivos de run
-   v
-Role Runner (Node.js, temporário, um papel por execução)
-   |-- carrega/valida solicitação autorizada
-   |-- adquire exclusividade; registra estado e eventos
-   |-- coordena prompts e, na revisão, gate fase 1 → fase 2
-   |-- inicia, cancela, encerra e verifica o Pi por meio do Pi Driver
-   v
-Pi Driver (Node.js: subprocesso, JSONL stdin/stdout, correlação, timeout)
-   |
-   v
-Pi Agent (processo RPC exclusivo daquele papel)
-   |
-   +--> código, relatórios e avaliações da task (evidências)
-
-Separados:
-- registro.md: status oficial (atualizado só pelo controlador autorizado)
-- state/<task>.json: estado operacional e transição pendente
-- runs/<runId>/: eventos e resultado da execução
-```
-
-**OpenClaw:** decide qual papel pode ser executado, avalia gates finais, comunica achados, pausa quando necessário e autoriza o atualizador oficial do registro. Não transfere ao Pi decisões de requisito, escopo, arquitetura ou autorização.
-
-**Role Runner:** executa **um** papel até seu término, coordena as duas fases do revisor e verifica gates internos antes de liberar a fase seguinte. Não conclui oficialmente uma task nem altera `registro.md` por conta própria.
-
-**Pi Driver:** controla `spawn`, transporte RPC JSONL, `stdin`/`stdout`, `stderr` diagnóstico, eventos, correlação, cancelamento, timeout, EOF e encerramento. Não julga qualidade técnica nem executa operações Git privilegiadas.
-
-**Pi:** cria/modifica artefatos do papel e reporta seu entendimento. Pode produzir sinalização estruturada, mas sua declaração é **candidata**, não autoridade para transição.
-
-**Validadores:** realizam checagens determinísticas de estado, arquivos, escopo verificável, Git, snapshots, limites, processos e evidências. **Não substituem a revisão técnica independente da IA.**
-
-## 4. Inicialização e acompanhamento — [APROVADO no comportamento; VALIDAR no Windows]
-
-### 4.1 Invocação do Role Runner
-
-Interface inicial proposta e aceita em nível de contrato:
-
-```powershell
-node role-runner.mjs run --config "C:\orquestrador\runs\solicitacao.json"
-```
-
-Exemplo ilustrativo do arquivo de solicitação:
-
-```json
-{
-  "taskId": "M01-T01",
-  "role": "implementador",
-  "attempt": 1,
-  "workspace": "C:\\projetos\\mvp-teste",
-  "modelProfile": "execution"
-}
-```
-
-- O **controlador** prepara a solicitação; o Pi não escolhe livremente parâmetros, tarefas, caminhos ou comandos.
-- A configuração é validada antes de iniciar o Pi: task aprovada, papel permitido pelo estado oficial, workspace/baseline conhecidos, dependências, Git, permissões, limites, lock e ausência de processo incerto.
-- Perfis de modelo (execução mais econômico, revisão mais capaz) são **intenção de desenho**, não fornecedores/modelos definitivos nem economia já comprovada.
-- Prompts extensos não são passados como argumentos arbitrários de shell. **[VALIDAR]** modo seguro de lançamento de `pi.cmd` no Windows; remover a combinação problemática de `spawn(..., shell:true)` com argumentos variáveis da prova (`DEP0190`).
-- `runId` é criado pelo sistema e identifica uma execução; `taskId` é o identificador estável da task. Não confundir `runId`, `sessionId` Pi e identificador do `exec` OpenClaw.
-
-### 4.2 Execução assíncrona
-
-- OpenClaw inicia via `exec` com `yieldMs`, sem exigir que uma única chamada fique bloqueada até o final; acompanha via `process.poll`/`process.log` ou notificação de conclusão **quando disponíveis na instalação local**.
-- Role Runner permanece ativo **somente enquanto executa o papel** e fecha após concluir o encerramento do Pi e registrar o resultado.
-- Eventos resumidos são emitidos em `stdout` e persistidos em `runs/<runId>/events.jsonl`; resultado final vai a `runs/<runId>/result.json`, gravado de modo atômico.
-- `stdout` do subprocesso **Pi** é reservado ao protocolo JSONL; separar `stderr` de diagnóstico. Lidar com linhas fragmentadas, correlação por `requestId`, limites de buffers e respostas RPC intercaladas com eventos.
-- `prompt` aceito não é `prompt` concluído. Aguardar `agent_settled` e verificar erros/estado/evidências; `agent_end` isolado não basta. Registrar EOF inesperado, timeout e falha de parse como falhas, nunca como conclusão.
-- **[VALIDAR]** confiabilidade de `exec`/`process` para papéis prolongados no Windows e comportamento após reinício do Gateway. Não presumir persistência durável.
-
-### 4.3 Revisão dentro de um Runner
-
-```text
-spawn Pi revisor (sessão nova)
-  → prompt RPC fase 1 (entradas filtradas)
-  → agent_settled
-  → gate automático: arquivo incompleta + avaliação + snapshot
-  → prompt RPC fase 2 (mesmo Pi, mesmo sessionId)
-  → agent_settled
-  → gate de saída da revisão
-  → encerrar e confirmar processo
-  → entregar evidências para validação do OpenClaw
-```
-
-O segundo prompt **não exige interação humana**, porém nunca é enviado se a avaliação independente exigida não foi persistida. Na reauditoria, é criado outro Pi revisor e todo esse fluxo se repete.
-
-## 5. Processos, cancelamento e exclusividade — [APROVADO]
-
-### 5.1 Término normal
-
-1. Aguardar conclusão efetiva do papel e registrar observações/eventos, sem confundir conclusão do prompt com aprovação.
-2. Solicitar encerramento normal do Pi (ex.: fechar `stdin` após o trabalho terminar, conforme comportamento validado).
-3. Esperar a saída do processo e confirmar sua identidade/encerramento, incluindo subprocessos relevantes.
-4. Registrar status final e somente então permitir liberar a exclusividade.
-
-### 5.2 Cancelamento e encerramento forçado
-
-- Quando houver solicitação de cancelamento, **não iniciar nova fase**; pedir abort da execução Pi e tratar eventuais mensagens enfileiradas, conforme comandos disponíveis e testados na versão local. `abort` **não** significa que o processo terminou.
-- Em seguida, solicitar encerramento normal e aguardar por prazo limitado.
-- Se não terminar, identificar corretamente o processo/árvore e executar **`taskkill /T /F`** como fallback; conferir o resultado e verificar que o Pi e filhos relevantes terminaram. `taskkill` com sucesso textual não comprova sozinho ausência de sobreviventes.
-- **[DETALHAR/VALIDAR]** prazos de abort, encerramento e escalonamento; modo concreto de solicitar cancelamento a um Runner assíncrono (p. ex. comando curto e solicitação de controle persistida). Não abrir porta, serviço residente ou IPC genérico apenas para isso.
-- Processo incerto, identidade ambígua, PID possivelmente reutilizado ou subprocesso sobrevivente: bloquear novas sessões e reconciliar; **nunca `taskkill` em PID antigo sem verificar identidade**.
-
-### 5.3 Proteção contra concorrência
-
-**Defesas complementares:**
-
-1. **OpenClaw** só despacha próximo papel após resultado apropriado, gates validados e encerramento anterior confirmado.
-2. **Role Runner** adquire uma trava exclusiva global do escopo do orquestrador **antes de criar o Pi**; libera apenas após prova de encerramento. Aquisição deve ser realmente exclusiva, inclusive entre duas invocações simultâneas.
-3. Registrar identidade da execução/processo para reconciliação. **Arquivo de lock sozinho ou PID isolado não basta**; lock aparentemente abandonado não pode ser apagado às cegas. Após falha, reconciliar processo anterior antes de aceitar novo `run`.
-
-O contrato se refere aos processos iniciados e controlados pelo **MVP**, não a uma promessa de impedir que qualquer outro software do Windows abra Pi fora do orquestrador.
-
-## 6. Três níveis de estado e resultados — [APROVADO]
-
-**Nível 1 — Estado operacional do processo/execução:** `starting`, `running`, `stopping`, `terminated`, `uncertain`. `terminated` indica **encerramento confirmado**, não sucesso funcional.
-
-**Nível 2 — Resultado do papel**, normalizado após conferência das evidências:
-
-| Resultado | Significado | Encaminhamento possível |
+| Componente | Responsabilidade | Não deve fazer |
 |---|---|---|
-| `completed` | Papel terminou e entregou evidências esperadas, validadas estruturalmente | Dependendo do papel: revisão, reauditoria ou aprovação técnica |
-| `changes_required` | Revisão finalizada contém `bloqueador` ou `importante` | Correção nas R1–R3; pausa após R4 com três correções |
-| `blocked` | Contradição, escopo, acesso ou decisão pendente | Pausa; decisão/reconciliação humana |
-| `failed` | Falha técnica ou resultado não confiável | Política de recuperação conforme fase |
-| `interrupted` | Cancelamento ou interrupção da execução | Encerrar/reconciliar; não assumir aprovação |
+| OpenClaw | Iniciar task aprovada; solicitar papéis; notificar achados e pausas; autorizar gates com verificadores determinísticos | Confiar na frase final do Pi; decidir requisito ou escopo novo |
+| Controlador local (módulo Node separado do driver) | Máquina de estados, lock, invocar validadores, gravar estado operacional, solicitar atualizações oficiais através do script | Editar `registro.md` manualmente; executar Git privilegiado |
+| Driver Pi (Node) | `spawn`, stdin/stdout JSONL, correlação, eventos, timeouts, abort/stop, PIDs e confirmação de término | Decidir aprovação técnica; atualizar registro; executar comandos arbitrários solicitados pelo modelo |
+| Pi por papel | Produzir código, relatório/revisões e sinalização estruturada para validação | Alterar estados oficiais, publicar Git, autorizar outro papel |
+| Verificadores | Conferir tarefa, Git, arquivos, integridade dos relatos, contagem, snapshot e transições | Inferir conclusão apenas de exit code, marcador isolado ou declaração do agente |
 
-O Pi pode declarar um resultado, mas **o Runner e o OpenClaw devem comprovar condições objetivas**. Ausência de `result.json` após crash não equivale a `completed`, nem autoriza classificar a task como concluída. Um resultado normalizado não concede autorização para commits.
+**Proposta de princípio:** validação determinística no controlador, com regras de engenharia consumidas das skills. Não duplicar toda a skill em código, mas automatizar os gates que impedem avanço incorreto.
 
-**Nível 3 — Estado oficial no `registro.md`:** `não iniciada`, `em andamento`, `aguardando revisão`, `em correção`, `pausada`, `concluída`, `substituída`. **Não introduzir esses estados no `state.json` como cópia da fonte oficial.**
+## 4. Comunicação OpenClaw ↔ controlador — **escolha ainda pendente**
 
-Transições do primeiro MVP:
+- **A — CLI síncrona por papel:** OpenClaw chama `node ... run-role`, que gerencia Pi até o fim. **Vantagem:** nenhum serviço residente, menos superfície. **Limite:** controle/cancelamento no meio da execução e gate de revisão fase 1 exigem que a CLI contenha boa parte do controlador e que a execução longa seja compatível com os limites de `exec` do OpenClaw.
+- **B — controlador local residente via Windows Named Pipe + CLI cliente:** OpenClaw chama uma CLI restrita (`start-role`, `send`, `status`, `abort`, `stop`, `events`) que fala com um único supervisor Node. **Vantagem:** chamadas separadas preservam processo/sessão, permitem gate entre os dois prompts de revisão e recuperação de estado. **Custo:** ciclo de vida e autorização de acesso ao pipe precisam de testes.
+- **C — HTTP em loopback:** aproveita a ponte de prova, mas requer autenticação, proteção contra acesso de outros processos e controle operacional. **Não recomendado** reaproveitar o endpoint experimental sem autenticação.
 
-```text
-não iniciada ──[entrada aprovada]──> em andamento
-   em andamento ──[implementação validada]──> aguardando revisão
-   aguardando revisão ──[revisão R1–R3 com obrigatório]──> em correção
-   em correção ──[correção validada]──> aguardando revisão
-   aguardando revisão ──[aprovação técnica]──> permanece aguardando revisão
-   aguardando revisão ──[R4 com obrigatório após 3 correções]──> pausada
-   qualquer estado não final pertinente ──[bloqueio justificado]──> pausada,
-      conforme transições permitidas pelo atualizador
-```
+**Recomendação inicial:** B, por corresponder às chamadas independentes já comprovadas e permitir que o OpenClaw inspecione o gate antes de liberar a fase 2. É uma **recomendação para validação**, não interface já existente. O pipe local também não cria isolamento forte entre programas executados sob a mesma conta Windows. Testar permissões do pipe e não expor funções RPC genéricas (`bash`, `set_model`, etc.) ao cliente.
 
-**`concluída` não é atingida neste MVP**, pois depende dos dois commits oficiais a implementar na Etapa C. Aprovação técnica fica em evidência/estado operacional, e o registro mantém `aguardando revisão` até a etapa Git. Não reabrir estados finais, redefinir IDs ou zerar contagens por falha.
+## 5. API mínima proposta — controlador/driver
 
-## 7. Gates de papéis — [APROVADO]
+| Operação | Entrada mínima | Saída/garantia |
+|---|---|---|
+| `startRole` | `taskId`, `role`, `round?`, `workspace`, `modelProfile`, `attempt` | `runId`, `pid`, `sessionId`, processo novo, lock exclusivo adquirido |
+| `sendPrompt` | `runId`, `phase`, `promptRef` | `requestId`; resposta Pi correlacionada; eventos **não** são uma resposta ao comando |
+| `getStatus` | `runId` | ciclo de vida, `isStreaming`, último evento e contadores; consulta não implica gate aprovado |
+| `readEvents` | `runId`, `afterSequence` | eventos ordenados, sem perda no limite da retenção, com sequência própria do controlador |
+| `abortRole` | `runId`, `reason` | solicitação de abort; aguardar `agent_settled(aborted=true)` ou aplicar timeout/encerramento |
+| `stopRole` | `runId` | stdin encerrado, filho finalizado, saída e árvore de processos verificadas; libera lock somente após confirmação |
+| `reconcile` | `taskId` | estado revalidado a partir de processo, artefatos, Git e registro; se ambíguo, bloqueia início |
 
-### 7.1 Implementador
+**Envelope sugerido:** `{runId, taskId, role, attempt, phase, requestId?, timestamp, payload}`. Todos os IDs são atribuídos pelo controlador. **Somente um prompt em andamento por Pi** no MVP; não usar `steer`/`follow_up` como mecanismo de concorrência. O par `requestId` identifica respostas RPC; eventos de sessão não têm necessariamente esse ID, logo recebem sequência e `runId` do controlador.
 
-**Entrada:** task aprovada com `Fazer`, `Não alterar`, `Entregáveis`, `Critério de conclusão`; baseline versionado (plano, registro, mapa `AGENTS.md`/`CLAUDE.md`), dependências verificadas, Git e workspace coerentes, status `não iniciada` ou retomada explicitamente válida, ausência de outro Pi/incerteza.
+**Reuso antes de implementação própria:** a documentação atual do Pi oferece `RpcClient` para integração TypeScript por subprocesso. Verificar disponibilidade, comportamento no Windows e compatibilidade com o Pi **instalado** antes de escrever parser e correlação próprios. Se não for compatível, usar o driver JSONL mínimo já validado na prova, com as salvaguardas abaixo.
 
-**Saída:** execução concluída e Pi encerrado; `task-<ID>-relatorio.md` presente e estruturado (alterações, comandos/testes, entregáveis, critérios, pendências); evidências identificáveis; Git consistente; ausência de commits indevidos e violações de escopo **objetivamente detectáveis**. Se tudo passar, o controlador opera `em andamento → aguardando revisão`.
+**JSONL:** delimitador LF somente; buffer de bytes/UTF-8 com tratamento de fragmentos; CRLF permitido; limite de tamanho por mensagem; stdout interpretado exclusivamente como protocolo, stderr como diagnóstico separado; consumo contínuo de ambos e backpressure de stdin. Não usar `readline` do Node como separador universal (U+2028/U+2029 podem aparecer em strings JSON). O prompt é **aceito**, não concluído, com resposta `success=true` / `disposition=started`. Esperar `agent_settled` e conferir erros de mensagem/provedor, estado e artefatos. `disposition=handled` não produz necessariamente um run a aguardar. `agent_end` isolado não é garantia de encerramento completo.
 
-**Limite:** presença de relatórios não prova qualidade de código; revisor avalia tecnicamente e repete testes relevantes. Não criar uma segunda revisão de código automática como gate.
+**Windows:** retirar `spawn(..., shell:true)` com argumentos variáveis. **Proposta:** descobrir entrada JavaScript executável do Pi instalado e invocar `node` com argumentos em array, sem shell, **se compatível com a instalação**; caso contrário, desenvolver launcher `.cmd` com argumentos estritamente fixos e testar o processo-filho. Em falha, encerrar a **árvore** iniciada, verificar término real e não reutilizar lock se houver Pi sobrevivente/órfão. Testar em máquina real; resultado E11 (morte de Pi) não provou reconciliação da task.
 
-### 7.2 Revisor — entrada, fase 1, fase 2 e saída
+## 6. Estado operacional mínimo (separado de `registro.md`)
 
-**Entrada:** status `aguardando revisão`; relatório disponível, entrega identificável, rodada `R` válida (1 a 4), revisões anteriores sem lacunas/duplicidade, Git sem mudanças concorrentes não reconciliadas e nenhum Pi anterior ativo.
-
-**Fase 1:** o Pi recebe task, fontes e entradas filtradas por `review_inputs.py`; não deve consultar Observações e narrativas anteriores. Executa o checklist técnico, reexecuta testes pertinentes e persiste `task-<ID>-revisao-<R>.md` com:
-
-- `Estado: incompleta`, `Snapshot da entrega: ...` correspondente;
-- seção `Avaliação independente` realmente preenchida: evidências, checklist, testes, achados classificados e conclusão preliminar;
-- seções futuras ainda não preenchidas (`Confronto com relatos`, `Decisão final`).
-
-**Gate intermediário, dentro do Runner:** antes do prompt 2, conferir arquivo e rodada, marcador, seções obrigatórias não vazias, snapshot coerente e persistência anterior à liberação. **Não exigir autorização humana.** Se houver exposição efetiva detectada de relatos durante fase 1, considerar a revisão contaminada e **pausar**; instruções e `pi-file-permissions` **não são isolamento forte**.
-
-**Fase 2:** no **mesmo processo/sessão Pi**, liberar relato do implementador, correções e revisões anteriores. Registrar confronto e **decisão final** com todos os achados, suas classificações, evidências e encaminhamento; preservar intacta a avaliação independente; mudar para `Estado: finalizada` só depois de preencher a decisão.
-
-**Saída:** validar estrutura, número da rodada, integridade, histórico, snapshot/alterações relevantes e encerramento do Pi. Os validadores não aprovam semanticamente a revisão: conferem que a análise e decisão técnica do revisor foram persistidas e são consistentes com os contratos.
-
-**Achados:** `bloqueador`/`importante` impedem aprovação; `melhoria opcional` não impede. **Reportar todos**, sem interromper automaticamente correções autorizadas. Sem achados obrigatórios, registrar **aprovação técnica** sem chegar a `concluída`.
-
-### 7.3 Corretor e reauditor
-
-Reaproveitar **o mesmo Runner, Pi Driver e gates gerais**. Não criar serviço nem orquestrador exclusivo para esse papel.
-
-**Corretor — diferenças específicas:**
-
-1. Entrada requer status `em correção`, revisão anterior `Estado: finalizada` e rodada apta (R1–R3), com decisão final de achados obrigatórios.
-2. Corrige **somente** `bloqueador`/`importante`, sem tratar opcionais como obrigação nem ampliar escopo.
-3. Acrescenta `Correção após revisão R` ao **relatório existente**, preservando o texto anterior, com arquivos, achados e testes. Saída válida: `em correção → aguardando revisão`, sem commit.
-
-**Reauditor:** é um **novo processo Pi revisor**, isolado do corretor, que executa integralmente as duas fases e gates do revisor. Máximo de **três correções completas e quatro revisões**. R4 com obrigatório após 3 correções → `pausada`, preservando evidências e encaminhando à `plan`. Falha técnica ou revisão `incompleta` não consome automaticamente uma rodada *finalizada*; divergências exigem reconciliação, não reset silencioso.
-
-## 8. Persistência operacional e consistência — [APROVADO]
-
-### 8.1 Fonte oficial versus informações operacionais
-
-```text
-orquestrador/                  # fora do repositório versionado da task
-├── state/
-│   └── M01-T01.json           # estado mínimo e transição pendente da task
-└── runs/
-    ├── run-001/
-    │   ├── events.jsonl       # sequência observável de eventos resumidos
-    │   └── result.json        # resultado estruturado deste papel
-    └── run-002/
-        ├── events.jsonl
-        └── result.json
-
-<local do projeto>/registro.md # status oficial, seis colunas preservadas
-<local do projeto>/achados/    # relatórios e revisões; evidências de engenharia
-```
-
-O diretório `orquestrador/` é um **exemplo de organização**, não caminho obrigatório. Não guardar tokens, segredos ou históricos completos de `.pi`/`.openclaw` nesses arquivos.
-
-Exemplo mínimo de `state/<task>.json`:
+Persistir um arquivo atômico do controlador, por exemplo `.orquestrador/state.json` **fora do commit funcional**, com:
 
 ```json
 {
   "schemaVersion": 1,
   "taskId": "M01-T01",
-  "workspace": "C:\\projetos\\mvp-teste",
-  "baselineCommit": "<hash-Git-verificado>",
-  "activeRun": {
-    "runId": "run-005",
-    "role": "revisor",
-    "processId": 4820,
-    "lastKnownStatus": "terminated"
-  },
-  "implementationRestartUsed": false,
-  "pendingTransition": null
+  "attempt": 1,
+  "runId": "identificador-da-execucao",
+  "role": "reviewer",
+  "phase": "review_phase1",
+  "reviewRound": 1,
+  "process": {"pid": null, "sessionId": null, "status": "stopped"},
+  "workflow": "verifying",
+  "baselineCommit": "hash-real-a-preencher",
+  "workspaceId": "ambiente-descartavel-identificado",
+  "lastEventSequence": 0,
+  "restartUsed": false
 }
 ```
 
-`activeRun` é **última informação conhecida**, não prova de vida do processo; identidade adicional e registro de lock necessários na implementação. O estado operacional **não replica** as colunas do `registro.md`. Contagens de revisão/correção são reconstruídas de revisões finalizadas e seções de correção; a contagem de **reinício técnico** fica no estado operacional.
+`process.status`: `starting | running | stopping | stopped | uncertain`.
+`workflow`: `idle | running | verifying | technically_approved | paused | failed`.
+`phase`: `implementation | review_phase1 | review_phase2 | correction | reaudit_phase1 | reaudit_phase2 | none`.
 
-### 8.2 Protocolo de transição oficial recuperável
+Persistir também eventos técnicos resumidos e resultados por `runId`, sem segredos ou transcrição bruta obrigatória. Usar escrita temporária + rename atômico; antes de avançar após reinício, conferir PIDs, lock, status oficial do `registro`, snapshot e Git. `state.json` **não replica o status oficial**. Recuperação ambígua = pausa, não retomada presumida.
 
-1. **Validar gate**: papel, evidências, processo encerrado, Git, estado oficial atual e inexistência de operação concorrente.
-2. **Persistir intenção** de transição com `operationId`, `runId`, estado `from`, estado `to` e referência às evidências (no `state.json`).
-3. **Executar atualização oficial** por adaptador validado de `update_registro.py`, exigindo **estado esperado** e exclusividade de gravação do registro.
-4. **Reler** o `registro.md` e verificar status, observações, identidade da task e coerência com a intenção.
-5. **Confirmar** removendo `pendingTransition` do estado operacional, com histórico rastreável em eventos da execução/operação.
+## 7. Resultados normalizados — proposta
 
-Exemplo ilustrativo de intenção:
+| Resultado do papel | Significado | Efeito |
+|---|---|---|
+| `completed` | Papel encerrou sem erro de protocolo **e suas evidências passaram no gate** | Habilita a próxima etapa, conforme papel; **não significa task concluída** |
+| `changes_required` | Revisão finalizada contém achado `bloqueador` ou `importante`, com evidências consistentes | Notifica tudo; se rodada 1–3, vai para correção; na rodada 4, pausa |
+| `blocked` | Decisão, acesso, contradição, escopo ou evidência necessária não recuperável | Pausa e solicita decisão/recomposição |
+| `failed` | Erro técnico ou saída inválida, com encerramento de processo conhecido | Reinicia uma vez **apenas se** tentativa for comprovadamente descartável; caso contrário, pausa |
+| `interrupted` | Abort/timeout/crash; pode haver processo sobrevivente ou resultado parcial | Conciliar e encerrar processo antes de qualquer continuação; depois classificar recuperação segura ou pausa |
 
-```json
-{
-  "pendingTransition": {
-    "operationId": "transition-001",
-    "from": "em andamento",
-    "to": "aguardando revisão",
-    "runId": "run-005",
-    "evidence": "runs/run-005/result.json"
-  }
-}
+**Resultado declarado pelo Pi:** sidecar JSON por execução (`role`, `round`, `declaredOutcome`, `evidencePaths`, `findings[]`, `runId`). É **sinalização**, não decisão. O validador exige consistência com os arquivos Markdown oficiais, Git e eventos; divergência bloqueia. O esquema definitivo do sidecar e o parser de `Decisão final` exigem ajuste mínimo posterior nas skills/templates.
+
+## 8. Papéis, entradas, saídas e gates
+
+| Papel/fase | Entrada permitida | Evidência/gate para seguir |
+|---|---|---|
+| Implementador | Task aprovada (quatro campos), mapa de caminhos, fontes pertinentes, baseline; sem todas as tasks do marco | Arquivos/relatório `task-<ID>-relatorio.md` existem; critérios testáveis identificados; mudanças atribuíveis à task; status oficial `em andamento` → `aguardando revisão` |
+| Revisor, fase 1 | Task, fontes, `review_inputs.py` (metadados e diffs filtrados), entregáveis permitidos. **Não** ler Observações/relatos anteriores | Gerar `task-<ID>-revisao-<R>.md` com `Estado: incompleta`, `snapshot` correspondente e `Avaliação independente` efetivamente preenchida. **Gate determinístico antes da fase 2** |
+| Revisor, fase 2 | **Mesma sessão Pi** da fase 1; agora ler relatório e revisões anteriores | Preencher `Confronto com relatos` e `Decisão final`; `Estado: finalizada`; achados e contagem válidos; sem narrativa reescrita da fase 1 |
+| Corretor | Nova sessão; task, revisão **finalizada** mais recente e relatório | Corrigir obrigatórios, acrescentar `Correção após revisão R` sem destruir histórico; devolver `em correção` → `aguardando revisão` |
+| Reauditor | **Novo processo revisor**, mesmos gates fase 1/fase 2 | Revisão de rodada seguinte, sem herança do chat da correção; max. 4 revisões |
+
+**Gates gerais:** task existente e ID estável, quatro campos presentes, dependências/baseline verificados, branch/workspace esperado, nenhum trabalho não atribuível modificado, limites respeitados, snapshots válidos, ausência de leitura indevida **observada**, relatórios presentes e coerentes, nenhum erro pendente, processo anterior comprovadamente morto. Checklist técnico da revisão inclui reexecutar testes relevantes. Marcadores escritos pelo Pi sem conferência não bastam.
+
+**Notificação ≠ interrupção:** reportar todo achado de revisão ao usuário, inclusive opcionais; correção obrigatória conhecida pode prosseguir automaticamente dentro do limite. Achado que exija mudança de requisito/arquitetura/`Não alterar` pausa.
+
+## 9. Máquina de transições oficial
+
+`registro.md` mantém exatamente os estados legados:
+
+```text
+não iniciada → em andamento → aguardando revisão
+                                │           │
+                                ├─ achado obrigatório (R1–R3) → em correção
+                                │                                     │
+                                │                      aguardando revisão
+                                │
+                                └─ revisão técnica aprovada → mantém
+                                   aguardando revisão até a Etapa C (Git)
 ```
 
-Gravar estado e resultado por arquivo temporário + substituição atômica **no mesmo volume**, com tratamento explícito de erros. Proteger `registro.md` contra **atualizações concorrentes**: o lock global de Pi **não substitui** lock/CAS de registro. Não sobrescrever alterações do usuário.
+Para o MVP sem commits, **`concluída` não é atingida**: aprovação técnica é registrada **apenas operacionalmente**, e o status oficial permanece `aguardando revisão`. O futuro gate de conclusão exigirá commit funcional confirmado, `update_registro.py` para `concluída` e segundo commit de metadados. `pausada` é aplicado com motivo para inconsistência, contaminação ou limite; a evolução para outro ID é responsabilidade futura da `plan` com aprovação humana.
 
-**Falha antes de alterar o registro:** ao retomar, ler intenção, revalidar estado/evidências e aplicar somente se continuar válido.  
-**Falha depois da alteração, antes da confirmação:** reconhecer que o estado desejado já foi alcançado, verificar integridade/observações e **não repetir** a atualização.  
-**Estado ou evidência divergente:** bloquear e reconciliar; não escolher silenciosamente um lado.
+## 10. Persistência, restart e falhas
 
-### 8.3 Preservação de `Observações` e dos contadores
+- Baseline: registrar commit Git, caminhos aprovados, inventário inicial e identidade do workspace; recusar execução se houver arquivos de usuário não atribuíveis ou material sensível.
+- Cada tentativa usa **workspace descartável dedicado**, sem mudanças preexistentes de terceiros. Para reinício técnico, é preferível **arquivar o workspace da tentativa** e reconstruir outro a partir do baseline verificado, em vez de `reset --hard` no workspace do usuário.
+- Se o Pi/crash/timeout deixa morte incerta, nenhum novo Pi pode iniciar; tentar encerramento controlado e confirmar **árvore** de processos. Se não for possível confirmar, pausar.
+- Reinicialização técnica: primeira execução `attempt=1`; se seguro, segunda `attempt=2`, com `restartUsed=true`. Falha na segunda, ambiguidade de Git, trabalho alheio ou ação irreversível: pausa.
+- Interrupção para decisão **não consome reinício técnico**. Revisões/correções previamente válidas não são zeradas por uma falha nem por reinício arbitrário. Como o descarte de tentativa pode apagar artefatos intermediários ainda não versionados, exigir guarda/arquivo de diagnóstico e política explícita de consistência com o registro antes de implementar restart.
+- Nenhum commit, push, merge ou `main` neste slice; se um deles ocorrer inesperadamente, interromper para reconciliação, nunca fazer rollback cego.
 
-- Manter as **seis colunas atuais** do `registro.md` e seus estados existentes.
-- `update_registro.py` atualmente **substitui** `Observações` com `--obs`; adaptar depois para **acréscimo controlado/idempotente**, sem duplicar mensagens nem apagar vínculos históricos. A operação existente `--integration` tem semântica própria; não antecipar integração Git.
-- Proteger transições com `expectedStatus` ou equivalente e validação de exclusividade; um estado igual ao destino **não basta**, isoladamente, sem conferir identidade da intenção e evidências.
-- Contar revisões a partir do histórico validado (arquivos `Estado: finalizada`) e correções a partir das seções correspondentes; não zerar contadores em falhas técnicas. Tentativas de processo e revisões finalizadas são coisas diferentes.
+## 11. Auditoria do repositório real — diferenças a tratar **depois** do contrato
 
-## 9. Falhas e recuperação — [APROVADO]
+Verificado em `my-skills/.agents/skills/` (`main`, 16/11/2026):
 
-| Situação | Encaminhamento |
-|---|---|
-| Falha técnica na **implementação inicial**, antes de commits | Reconciliar processo/lock e Git. Se a tentativa for isolada e descartável **com prova**, preservar diagnóstico, reconstruir do baseline e permitir **uma** nova tentativa. |
-| Segunda falha na implementação inicial | Pausar; sem terceira tentativa automática. |
-| Falha durante **revisão ou correção** | Preservar evidências, pausar e reconciliar; **não reiniciar automaticamente** no MVP. |
-| Cancelamento humano | Interromper, preservar e não tratar como falha técnica elegível a reinício automático. |
-| Falha de comunicação, EOF, timeout ou crash | Não avançar sem resultado confiável; confirmar término do Pi/árvore antes de outra execução. |
-| OpenClaw reinicia; estado anterior incerto | Conferir estado operacional, identidade/processos, Git e registro. Não iniciar outro Pi até reconciliação. |
-| Alterações preexistentes, concorrentes ou de terceiros | **Nunca descartar**. Pausar quando não for possível separar ou preservar com segurança. |
-| Commit, merge ou push já realizado ou descoberto | **Nunca rollback/restart cego.** Parar para reconciliação; operações Git estão fora deste MVP. |
-| Fase 1 expôs efetivamente relatos excluídos | Revisão contaminada; interromper e pausar. |
-| Quarta revisão finalizada com obrigatório após terceira correção | Pausar task e encaminhar à `plan`; não abrir correção 4. |
+1. `implement/SKILL.md` ainda manda iniciar cada papel manualmente numa conversa nova e proíbe avanço automático/subagentes. A orquestração por processos Pi independentes demandará **adaptação mínima explícita**.
+2. A `plan` atual concentra o marco em um `plano.md`; arquivos individuais por task + índice são **aprovados conceitualmente, mas não implementados**. O primeiro slice pode usar um `plano.md` real/fixture, sem migrar a `plan`.
+3. `review_inputs.py` já retorna `snapshot`, diffs filtrados, `reviews` e metadados sem narrativas. É base útil para o gate da fase 1, **não ACL** e não detector completo de leitura indireta.
+4. `update_registro.py` valida os estados, rejeita conclusões sem hash e substitui `Observações` quando `--obs` é passado; não há transição para reinício técnico (`não iniciada`) nem operação de append de observações. Não inventar reset de status; propor **append atômico com controle de concorrência** ou evento de tentativa separado, sem apagar histórico.
+5. A revisão atual é narrativa Markdown; `Estado: incompleta/finalizada` e `snapshot` aparecem no contrato do revisor, mas classificações/conclusões ainda exigem esquema ou validador específico para permitir gates programáticos. Não aceitar um marcador como aprovação automática.
+6. A skill atual só aceita dois commits após autorização humana explícita; a autorização conceitual do marco muda esse comportamento **em etapa posterior**. **Não liberar commits no MVP A/B.**
 
-**Estratégia aprovada de reinício:** preservar/archive a tentativa antiga para diagnóstico e reconstruir **outro workspace descartável** do baseline aprovado (quando comprovadamente seguro), em vez de executar `git reset --hard` no workspace do usuário. O `registro.md` não volta artificialmente a `não iniciada`; a nova tentativa técnica é identificada no estado operacional sem apagar o histórico oficial.
+## 12. Critérios de aceite do primeiro slice (Etapa B)
 
-**Limite aceito para o MVP:** proteção de arquivos na fase 1 por instruções, `review_inputs.py` e `pi-file-permissions` é mitigação contra exposição acidental, **não isolamento forte**. No experimento E14, o controlador RPC `bash` acessou arquivo classificado como proibido. Usar somente dados fictícios, sem segredos nem credenciais Git amplas, e não declarar segurança de produção.
+| ID | Cenário em repositório descartável | Resultado observável |
+|---|---|---|
+| T01 | Task pequena, implementador conclui, revisor aprova | Relatório + revisão fase 1/2, `technically_approved`, registro `aguardando revisão`; nenhum commit |
+| T02 | Revisão R1 com achado `importante` | Notificação e status `em correção`; nova sessão do corretor; revisão R2 independente |
+| T03 | Achado `melhoria opcional` sem obrigatório | Notificar, não corrigir automaticamente, aprovação técnica possível |
+| T04 | Achados obrigatórios sobrevivem à revisão R4 após 3 correções | Status `pausada` com motivo; nenhuma R5/correção 4 |
+| T05 | `prompt` aceito, mas ainda sem `agent_settled` | Não avança; acompanha eventos e timeout, não interpreta resposta como conclusão |
+| T06 | `abort` em andamento | Cancelamento/interrupção reportados; processo e árvore encerrados antes de qualquer novo Pi |
+| T07 | Crash/EOF/JSONL inválido, timeout ou falha de provedor | Erro identificado, sem gate falso; reconciliação; no máximo um restart seguro |
+| T08 | Falha com mudanças preexistentes ou PID órfão incerto | Pausa; preserva trabalho; não reinicia nem abre segundo Pi |
+| T09 | Revisão fase 1 sem avaliação persistida ou com relato lido indevidamente de forma detectada | Fase 2 bloqueada; contaminação detectada pausa o fluxo |
+| T10 | Processo Pi anterior ainda ativo | `startRole` rejeitado; nunca dois Pi ativos |
+| T11 | Revisão aprovada com registro alterado inesperadamente | Gate falha, reconciliação; não escreve por cima das Observações |
 
-## 10. Critérios de aceite e plano de testes — [APROVADO]
+**Limites dos testes:** E12 original exercitou timeout simulado, não falha real do provedor; E14 demonstrou bypass pelo controlador RPC `bash`, não isolamento forte. Testes de observação de contaminação não provam que todas as leituras sejam detectáveis.
 
-Cada teste deve gerar evidências verificáveis (logs operacionais reduzidos, resultado por run, arquivos, Git e registro); não basta o modelo dizer `PASS`.
+## 13. Decisões que faltam fechar, na ordem sugerida
 
-| ID | Cenário | Evidência de aceite | Modalidade prioritária |
-|---|---|---|---|
-| T01 | Implementador → revisor → aprovação técnica | Dois processos/sessões Pi diferentes; revisão completa 1+2; relatórios; estado operacional aprovado; registro `aguardando revisão`; **nenhum commit** | **Real**, OpenClaw + Pi |
-| T02 | Achado `importante` → corretor → reauditor | Revisão R1 finalizada; `em correção`; corretor novo Pi; relatório acrescentado; R2 por novo Pi; eventos e estados coerentes | **Real**, OpenClaw + Pi |
-| T03 | Apenas `melhoria opcional` | Reporte do achado; aprovação técnica permitida; sem correção obrigatória | Simulação determinística (complementável por real) |
-| T04 | Limite: 3 correções / 4 revisões | Pausa após R4 com obrigatório; nenhuma correção 4/R5; histórico íntegro | Determinístico |
-| T05 | Gate fase 1 → fase 2 | Sem avaliação/snapshot válido, prompt 2 não enviado; com avaliação válida, prompt 2 na **mesma sessão** | Unitário + integração real focal |
-| T06 | Gate de entrada/saída inválido | Relatório ausente, diff inconsistente ou escopo proibido detectável bloqueia transição | Determinístico |
-| T07 | Cancelamento e encerramento | `abort`/encerramento normal e fallback `taskkill /T /F` quando necessário; árvore e identidade verificadas antes de liberar | **Real**, Windows descartável |
-| T08 | Exclusividade | Chamada duplicada/concorrente não cria segundo Pi; lock incerto bloqueia | Determinístico + integração de processo |
-| T09 | Falha técnica inicial + reinício | No máximo **uma** nova tentativa segura; segunda falha pausa | Determinístico + falha de processo focal |
-| T10 | Recuperação insegura | Processo/PID incerto ou mudanças preexistentes preservados; não reinicia nem descarta | Determinístico + processo Windows focal |
-| T11 | Falha entre intenção, registro e confirmação | Retomada idempotente, sem transição duplicada ou perda de `Observações`; divergências pausam | Determinístico |
-| T12 | Exposição efetiva detectada na fase 1 | Interrupção e registro de contaminação; **não** afirmar isolamento forte | Teste sintético controlado |
+1. **Canal OpenClaw ↔ controlador:** opção B (Named Pipe + CLI) recomendada versus opção A (CLI por papel). Verificar compatibilidade com o `exec` do OpenClaw Windows e com a versão local do Pi.
+2. **Contrato de evidências legíveis por máquina:** sidecar JSON mínimo + validação dos Markdown oficiais, sem duplicar fonte de verdade; definir campos obrigatórios e parser de `Decisão final`.
+3. **Condições objetivas de reinício:** formato do inventário do workspace, guarda de evidências, controles anti-concorrência e efeito sobre status intermediários.
+4. **Ajustes mínimos futuros:** primeiro criar protótipo descartável B; depois adaptar `update_registro.py`, `implement` e, mais tarde, `plan` — cada alteração com testes e compatibilidade com o fluxo manual.
 
-**Escopo dos testes reais:** T01 e T02 obrigatoriamente com agentes reais; cancelamento e encerramento efetivo também em Windows real. Testes repetitivos/limites/falhas de persistência preferencialmente com *fixtures*, processos falsos e eventos simulados para reduzir custo. Repetir experimentos antigos só se surgir nova hipótese técnica, não refazer instalação ou prova RPC E09–E14 sem motivo.
-
-**Critério global de aceite:** fluxo real completo e rastreável; nenhuma transição sem gates; nenhuma segunda sessão Pi enquanto primeira estiver incerta; relatório e avaliação persistidos; limites respeitados; observações preservadas; falha segura; tudo apenas em projeto descartável.
-
-## 11. Sequência de implementação aprovada
-
-1. **Slice 1 — Runner/driver:** invocação assíncrona, `runId`, JSONL/eventos, comunicação RPC, término normal, cancelamento, `taskkill /T /F`, lock e testes no Windows.
-2. **Slice 2 — Fluxo mínimo:** uma implementação e uma revisão em duas fases, gates, resultados/estado operacional e aprovação técnica sem commits.
-3. **Slice 3 — Correção e reauditoria:** ciclo de achado obrigatório, reaproveitando Runner/validadores, reportando achados e respeitando limites.
-4. **Slice 4 — Persistência/falhas:** intenções idempotentes, atualização segura do registro, reinício técnico limitado, falhas simuladas e reconciliação.
-
-Realizar testes ao concluir cada slice; **não** codificar um orquestrador genérico antes do ciclo simples funcionar. Antes de tocar nas skills atuais, auditar e adaptar minimamente os pontos incompatíveis, com testes que preservem o fluxo manual enquanto aplicável.
-
-## 12. Diferenças verificadas na implementação atual das skills
-
-O repositório real ainda **não implementa** essas decisões de automação. Em particular:
-
-- `implement/SKILL.md` prevê invocações manuais em conversas separadas e impede avanço automático; no MVP os papéis serão processos Pi independentes despachados pelo OpenClaw. A regra de **independência** permanece; o disparo muda.
-- `plan/SKILL.md` atual usa `plano.md` com tasks no mesmo arquivo; índice por marco + arquivos separados são **decisão conceitual posterior**. A primeira task de teste pode usar fixture do formato atual; não migrar `plan` agora.
-- `review_inputs.py` já prepara metadados/diffs filtrados e `snapshot`, mas não confirma sozinho que a avaliação independente está completa nem oferece ACL para todas as ferramentas do Pi.
-- `update_registro.py` aceita estados/transições, mas substitui Observações com `--obs` e não faz CAS/append idempotente. A adaptação mínima será necessária antes de automatizar transições confiáveis.
-- `references/revisor.md` instrui o agente a fazer ambas as fases; o Runner passará a impor o gate e dividir os prompts **mantendo a mesma sessão**, sem enfraquecer a avaliação independente.
-- As referências atuais orientam o agente a atualizar o registro; na automação, apenas o **controlador autorizado pelo OpenClaw** fará essa atualização, após validar gates. Isso exige ajuste explícito, não apenas um prompt contraditório.
-- A skill atual exige autorização humana específica para os dois commits; a autorização conceitual de execução do marco e Git Gateway virá **depois**. **Nenhum commit no MVP desta fase.**
-
-## 13. Pontos ainda a detalhar/testar (não são decisões reabertas)
-
-1. **Windows/processo:** duração concreta de timeouts, método seguro de `spawn` do Pi instalado sem argumentos livres em shell, identificação de árvore/processos sobreviventes, aquisição/liberação de lock e tratamento de PID reutilizado.
-2. **OpenClaw:** funcionamento efetivo de `exec` assíncrono + `process` sob Gateway Windows e após reinício; verificar limites e ajustar sem alterar a decisão sobre Role Runner por papel, salvo evidência de inviabilidade.
-3. **Resultado/formatos:** esquema final do `result.json`, `events.jsonl`, identidade de run e política de retenção; formato do sinal estruturado de decisões/achados sem inventar que os Markdown atuais já são parseáveis de forma completa.
-4. **Validadores:** campos mínimos exatos da avaliação independente e do resultado final; como detectar mudanças de arquivos e preservar o snapshot. Detector de exposição só para ocorrências **observáveis**, sem promessa de isolamento completo.
-5. **Persistência:** implementação do lock de registro, `expectedStatus`, append idempotente nas Observações, arquivo temporário e recuperação de intenção pendente; testes de falha entre gravações.
-6. **Recuperação técnica:** condições objetivas para classificar tentativa de implementação como descartável, arquivar evidências e criar novo workspace sem perda de alterações preexistentes.
-7. **Modelos/recursos:** perfis reais, limites de custo/tempo e política de notificações detalhada (todos os achados devem ser reportados). Não assumir economia de modelos antes de medir.
-
-**Próxima ação concreta:** iniciar o **Slice 1**, produzindo um Role Runner mínimo e testes direcionados para os comportamentos de processo ainda não demonstrados em Windows. Nenhuma alteração nas skills, Git Gateway ou repositório importante antes de validar a infraestrutura básica.
+**Próximo experimento novo (não repetir E09–E14):** criar um controlador local mínimo capaz de iniciar um revisor, receber o primeiro prompt, conferir artefato incompleto, enviar o segundo prompt **na mesma sessão**, parar o processo e impedir o lançamento de outro antes do encerramento confirmado.
