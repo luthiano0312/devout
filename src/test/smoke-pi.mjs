@@ -25,8 +25,8 @@ let failureCode;
 const warning = item => { if (item.code === 'DEP0190') summary.dep0190 = true; };
 process.on('warning', warning);
 
-// Test-only process observations: no CommandLine, environment, tokens or files
-// in the output. The product's robust termination policy belongs to T02.
+// Independent CIM cross-check, in addition to the Driver's kernel Job proof.
+// No CommandLine, environment, tokens or files in the output.
 async function processes(rootPid, pids = []) {
   const script = `
 $ErrorActionPreference = 'Stop'
@@ -58,36 +58,16 @@ async function observeTree() {
   if (!driver?.child.pid) return;
   for (const item of await processes(driver.child.pid)) identities.set(item.pid, item);
 }
-async function waitClosed(ms) {
-  let timer;
-  try {
-    return await Promise.race([driver.closed, new Promise(resolve => { timer = setTimeout(() => resolve(null), ms); })]);
-  } finally { clearTimeout(timer); }
-}
 async function cleanup() {
-  let observationFailed = false;
-  try { await observeTree(); }
-  catch { observationFailed = true; }
-  // Even an unavailable process inventory must not prevent orderly EOF.
-  driver.closeInput();
-  let closed = await waitClosed(10_000);
-  if (!closed && driver.child.pid) {
-    const root = identities.get(driver.child.pid);
-    const live = await processes(driver.child.pid, [driver.child.pid]);
-    if (!root || !live.some(p => p.pid === root.pid && p.created === root.created)) {
-      throw Object.assign(new Error(), { code: 'UNCERTAIN_PROCESS_IDENTITY' });
-    }
-    summary.forced = true;
-    await exec('taskkill.exe', ['/PID', String(root.pid), '/T', '/F'], { windowsHide: true, timeout: 10_000 });
-    closed = await waitClosed(5000);
-  }
-  if (!closed) throw Object.assign(new Error(), { code: 'CHILD_NOT_REAPED' });
-  summary.exitCode = closed.exitCode;
-  if (observationFailed) throw Object.assign(new Error(), { code: 'PROCESS_INVENTORY_UNAVAILABLE' });
+  const ended = await driver.shutdown({ cancel: Boolean(failureCode) });
+  summary.exitCode = ended.exitCode;
+  summary.forced = ended.forced;
+  summary.terminationState = ended.state;
+  if (!ended.canRelease) throw Object.assign(new Error(), { code: ended.reason || 'UNCERTAIN_PROCESS_IDENTITY' });
   const remaining = identities.size ? await processes(driver.child.pid, [...identities.keys()]) : [];
-  summary.processesGone = remaining.every(p => p.created !== identities.get(p.pid)?.created);
+  summary.processesGone = ended.processesGone && remaining.every(p => p.created !== identities.get(p.pid)?.created);
   if (!summary.processesGone) throw Object.assign(new Error(), { code: 'OBSERVED_PROCESS_SURVIVED' });
-  if (closed.failure) throw closed.failure;
+  if (ended.failureCode) throw Object.assign(new Error(), { code: ended.failureCode });
   assert.equal(summary.exitCode, 0);
   assert.equal(summary.forced, false);
 }

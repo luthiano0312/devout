@@ -1,4 +1,5 @@
-import { spawn } from 'node:child_process';
+import { setTimeout as delay } from 'node:timers/promises';
+import { spawnManagedPi } from './windows-process-tree.mjs';
 import { EventEmitter } from 'node:events';
 import { statSync } from 'node:fs';
 import { win32 } from 'node:path';
@@ -52,16 +53,24 @@ export function startPi({ piCmd, cwd, profile = 'default', ...transportOptions }
   // Validate options before creating a process that could otherwise be orphaned.
   const limits = validateOptions(transportOptions);
   const spec = windowsLaunchSpec({ piCmd, cwd, profile });
-  return new PiDriver(spawn(spec.file, spec.args, spec.options), limits);
+  const { child, processTree } = spawnManagedPi(spec);
+  return new PiDriver(child, { ...limits, processTree });
 }
 
 function validateOptions({ commandTimeoutMs = 30_000, maxRecordBytes = 8 * 1024 * 1024,
-  maxQueuedBytes = 8 * 1024 * 1024, maxPending = 32 } = {}) {
+  maxQueuedBytes = 8 * 1024 * 1024, maxPending = 32,
+  abortTimeoutMs = 5000, normalWaitMs = 10_000, forceWaitMs = 5000,
+  forceCommandMs = 5000, pollMs = 100 } = {}) {
   return {
     commandTimeoutMs: positiveInteger(commandTimeoutMs, 'commandTimeoutMs'),
     maxRecordBytes: positiveInteger(maxRecordBytes, 'maxRecordBytes'),
     maxQueuedBytes: positiveInteger(maxQueuedBytes, 'maxQueuedBytes'),
     maxPending: positiveInteger(maxPending, 'maxPending'),
+    abortTimeoutMs: positiveInteger(abortTimeoutMs, 'abortTimeoutMs'),
+    normalWaitMs: positiveInteger(normalWaitMs, 'normalWaitMs'),
+    forceWaitMs: positiveInteger(forceWaitMs, 'forceWaitMs'),
+    forceCommandMs: positiveInteger(forceCommandMs, 'forceCommandMs'),
+    pollMs: positiveInteger(pollMs, 'pollMs'),
   };
 }
 
@@ -71,7 +80,16 @@ export class PiDriver extends EventEmitter {
     super();
     Object.assign(this, validateOptions(options));
     this.child = child;
+    this.processTree = options.processTree;
+    this.lifecycle = 'starting';
+    this.activity = false;
+    this.lastSettlement = null;
+    this.assistantFailed = false;
+    this.shutdownPromise = null;
+    this.processExit = null;
+    this.observed = new Map();
     this.failure = null;
+    if (this.processTree) this.processTree.onFailure = () => this.fail('PROCESS_OBSERVER_FAILED', 'Process observer failed');
     this.inputClosed = false;
     this.pending = new Map();
     this.fragments = [];
@@ -81,12 +99,18 @@ export class PiDriver extends EventEmitter {
     this.writeBlocked = false;
     this.run = null;
     this.closed = new Promise(resolve => { this.resolveClosed = resolve; });
-    this.ready = new Promise((resolve, reject) => {
+    const spawned = new Promise((resolve, reject) => {
       child.once('spawn', resolve);
       child.once('error', () => reject(new DriverError('SPAWN_ERROR', 'Child failed to start')));
     });
-    // Keep an unobserved ready promise from becoming an unhandled rejection.
-    this.ready.catch(() => {});
+    this.ready = Promise.all([spawned, this.processTree?.ready]).then(() => {
+      if (this.processTree?.initialSnapshot) this.rememberSnapshot(this.processTree.initialSnapshot);
+      if (this.lifecycle === 'starting') this.setLifecycle('running');
+    });
+    this.ready.catch(() => {
+      this.fail('PROCESS_START_FAILED', 'Process launch or identity setup failed');
+      if (child.connected) child.disconnect(); // launch gate exits without creating Pi
+    });
     child.on('error', () => this.fail('SPAWN_ERROR', 'Child process error'));
     child.stdin.on('error', () => this.fail('STDIN_ERROR', 'RPC stdin failed'));
     child.stdout.on('error', () => this.fail('STDOUT_ERROR', 'RPC stdout failed'));
@@ -100,6 +124,7 @@ export class PiDriver extends EventEmitter {
         this.fail('EARLY_EOF', 'RPC stdout ended before requested shutdown or completion');
       }
     });
+    child.on('exit', (exitCode, signal) => { this.processExit = { exitCode, signal }; });
     child.on('close', (exitCode, signal) => {
       if (!this.inputClosed || this.pending.size || this.run) {
         this.fail('EARLY_EXIT', 'Child exited before requested shutdown or completion');
@@ -107,8 +132,10 @@ export class PiDriver extends EventEmitter {
         this.fail('PROCESS_EXIT', 'Child exited abnormally');
       }
       const result = { exitCode, signal, failure: this.failure };
+      this.closeResult = result;
       this.resolveClosed(result);
       this.emit('closed', result);
+      if (this.processTree && !this.shutdownPromise) void this.shutdown({ cancel: true });
     });
   }
 
@@ -124,7 +151,6 @@ export class PiDriver extends EventEmitter {
     this.fragments = [];
     this.fragmentBytes = 0;
     this.finishRun(this.failure);
-    // Only an orderly EOF request here. Escalation/tree verification is T02.
     this.closeInput();
     this.emit('failure', this.failure);
   }
@@ -132,13 +158,117 @@ export class PiDriver extends EventEmitter {
   closeInput() {
     this.inputClosed = true;
     if (!this.child.stdin.destroyed && !this.child.stdin.writableEnded) this.child.stdin.end();
+    if (this.processTree && !this.shutdownPromise) void this.shutdown({ cancel: true });
+  }
+
+  setLifecycle(state) {
+    this.lifecycle = state;
+    this.emit('lifecycle', state);
+  }
+
+  /** Idempotent bounded termination. Only canRelease=true permits a new run. */
+  shutdown({ cancel = false } = {}) {
+    if (this.shutdownPromise) return this.shutdownPromise;
+    if (!cancel && !this.failure && (this.activity || this.run || this.pending.size)) {
+      return Promise.reject(new DriverError('WORK_ACTIVE', 'Wait for work or request cancellation'));
+    }
+    // Assign before lifecycle listeners or closeInput/failure callbacks reenter.
+    this.shutdownPromise = Promise.resolve().then(() => this.terminate(cancel));
+    this.setLifecycle('stopping');
+    return this.shutdownPromise;
+  }
+
+  cancel() { return this.shutdown({ cancel: true }); }
+
+  async terminate(cancel) {
+    const result = { state: 'uncertain', canRelease: false, cancelled: cancel,
+      abortAccepted: false, forced: false, taskkillExitCode: null,
+      processesGone: false, workCompleted: false, identity: null, observed: [] };
+    if (cancel && this.run) this.finishRun(new DriverError('CANCELLED', 'Run cancelled'));
+    try {
+      await this.ready;
+      result.identity = this.processTree?.identity ?? null;
+      if (!this.processTree) throw new DriverError('NO_PROCESS_OBSERVER', 'No trusted tree observer');
+      await this.inspectTree();
+      if (cancel && !this.failure && !this.inputClosed && !this.processExit) {
+        try {
+          const response = await this.#command('abort', {}, { timeoutMs: this.abortTimeoutMs }, null, true);
+          result.abortAccepted = response.success === true;
+        } catch { /* Abort acknowledgement is diagnostic, not proof of exit. */ }
+      }
+      this.closeInput();
+      let gone = await this.waitForTree(this.normalWaitMs);
+      if (!gone) {
+        const snapshot = await this.inspectTree();
+        if (!snapshot.rootAlive) throw new DriverError('ROOT_GONE_WITH_DESCENDANTS', 'Cannot safely target an exited root');
+        result.forced = true;
+        // The Windows observer rechecks the retained root handle at the point
+        // of taskkill, and holds that object through the operation.
+        const forced = await this.processTree.force(this.forceCommandMs);
+        result.taskkillExitCode = forced.exitCode;
+        gone = await this.waitForTree(this.forceWaitMs);
+      }
+      if (!gone) throw new DriverError('PROCESS_SURVIVED', 'Owned tree did not terminate');
+      result.processesGone = true;
+      result.canRelease = true;
+      result.state = 'terminated';
+      result.workCompleted = !cancel && !this.failure && !this.activity &&
+        this.lastSettlement?.aborted === false && !this.assistantFailed;
+    } catch (error) {
+      result.reason = error.code || 'PROCESS_OBSERVATION_FAILED';
+      this.closeInput();
+    } finally {
+      try { await this.processTree?.dispose(); }
+      catch { result.observerCleanupFailed = true; }
+    }
+    result.identity ??= this.processTree?.identity ?? null;
+    result.exitCode = this.processExit?.exitCode ?? null;
+    result.signal = this.processExit?.signal ?? null;
+    result.failureCode = this.failure?.code ?? null;
+    result.observed = [...this.observed.values()];
+    this.setLifecycle(result.state);
+    this.terminationResult = result;
+    this.emit('termination', result);
+    return result;
+  }
+
+  async inspectTree() {
+    return this.rememberSnapshot(await this.processTree.snapshot());
+  }
+
+  rememberSnapshot(snapshot) {
+    if (!snapshot || typeof snapshot.rootAlive !== 'boolean' || !Array.isArray(snapshot.members)) {
+      throw new DriverError('INVALID_PROCESS_SNAPSHOT', 'Invalid process observation');
+    }
+    for (const member of snapshot.members) {
+      if (!Number.isSafeInteger(member.pid) || member.pid <= 0) {
+        throw new DriverError('INVALID_PROCESS_SNAPSHOT', 'Invalid process identity');
+      }
+      const key = `${member.pid}:${member.created}`;
+      if (this.observed.size >= 4096 && !this.observed.has(key)) {
+        throw new DriverError('PROCESS_OBSERVATION_LIMIT', 'Too many process observations');
+      }
+      this.observed.set(key, member);
+    }
+    return snapshot;
+  }
+
+  async waitForTree(timeoutMs) {
+    const deadline = performance.now() + timeoutMs;
+    do {
+      const snapshot = await this.inspectTree();
+      // close/exit status alone is never a descendant proof; both are required.
+      if (!snapshot.rootAlive && snapshot.members.length === 0 && this.processExit && this.closeResult) return true;
+      if (performance.now() >= deadline) return false;
+      await delay(Math.min(this.pollMs, Math.max(1, deadline - performance.now())));
+    } while (true);
   }
 
   command(type, payload = {}, options) {
     return this.#command(type, payload, options);
   }
 
-  #command(type, payload = {}, { timeoutMs = this.commandTimeoutMs } = {}, observedRun = null) {
+  #command(type, payload = {}, { timeoutMs = this.commandTimeoutMs } = {}, observedRun = null, allowStopping = false) {
     positiveInteger(timeoutMs, 'timeoutMs');
     if (typeof type !== 'string' || !type || !payload || typeof payload !== 'object' ||
         Array.isArray(payload) || ['id', 'requestId', 'type'].some(key => Object.hasOwn(payload, key))) {
@@ -146,6 +276,9 @@ export class PiDriver extends EventEmitter {
     }
     if (this.failure || this.inputClosed) {
       return Promise.reject(this.failure || new DriverError('INPUT_CLOSED', 'RPC input is closed'));
+    }
+    if (this.lifecycle !== 'running' && this.lifecycle !== 'starting' && !allowStopping) {
+      return Promise.reject(new DriverError('STOPPING', 'Process termination already requested'));
     }
     if (type === 'prompt' && this.run && observedRun !== this.run) {
       return Promise.reject(new DriverError('RUN_ACTIVE', 'Cannot inject a prompt into an observed run'));
@@ -162,6 +295,11 @@ export class PiDriver extends EventEmitter {
     return new Promise((resolve, reject) => {
       const timer = setTimeout(() => this.fail('COMMAND_TIMEOUT', 'RPC command deadline exceeded'), timeoutMs);
       this.pending.set(id, { type, resolve, reject, timer });
+      if (type === 'prompt') {
+        this.activity = true;
+        this.lastSettlement = null;
+        this.assistantFailed = false;
+      }
       this.writeQueue.push({ line, bytes });
       this.queuedBytes += bytes;
       this.flushWrites();
@@ -277,9 +415,20 @@ export class PiDriver extends EventEmitter {
       clearTimeout(entry.timer);
       this.pending.delete(id);
       if (msg.success) entry.resolve(msg);
-      else entry.reject(new DriverError('RPC_ERROR', 'RPC command was rejected', msg));
+      else {
+        if (entry.type === 'prompt') this.activity = false;
+        entry.reject(new DriverError('RPC_ERROR', 'RPC command was rejected', msg));
+      }
       this.emit('response', msg);
       return;
+    }
+    if (msg.type === 'agent_start') this.activity = true;
+    if (msg.type === 'agent_settled') {
+      this.activity = false;
+      this.lastSettlement = msg;
+    }
+    if (msg.type === 'message_end' && msg.message?.role === 'assistant') {
+      this.assistantFailed ||= ['error', 'aborted'].includes(msg.message.stopReason) || Boolean(msg.message.errorMessage);
     }
     if (this.run) {
       if (msg.type === 'message_end' && msg.message?.role === 'assistant') {

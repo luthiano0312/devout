@@ -226,9 +226,8 @@ test('Windows launcher uses fixed command, shell:false, and rejects shell syntax
   assert.throws(() => startPi({ piCmd, cwd: root, maxPending: 0 }), TypeError);
   const d = startPi({ piCmd, cwd: root, profile: 'isolated' });
   t.after(async () => {
-    d.closeInput();
-    try { await deadline(d.closed); }
-    catch (error) { d.child.kill(); throw error; }
+    const result = await d.cancel();
+    assert.equal(result.canRelease, true, 'Windows launcher tree must be verified gone');
   });
   await d.ready;
   // Metacharacters in a prompt are data only, never arguments for cmd.exe.

@@ -104,7 +104,7 @@ A ordem das tasks abaixo é a sequência recomendada. As dependências são cons
 
 ### M01-T02 — Pi Driver: término, cancelamento e timeout de processo
 
-**Fazer**
+#### Fazer
 
 - Acrescentar ao Driver ciclo de vida explícito do processo (início, execução, encerramento solicitado, encerramento comprovado, estado incerto), com saída normal somente após fim do trabalho e verificação de término do Pi e subprocessos relevantes.
 - Implementar `abort` da atividade em andamento, prazo limitado para término normal, escalonamento de timeout e *fallback* `taskkill /T /F` **somente após identificar seguramente o processo/árvore alvo**.
@@ -112,17 +112,17 @@ A ordem das tasks abaixo é a sequência recomendada. As dependências são cons
 - Registrar identidade suficiente para evitar agir sobre PID reutilizado ou processo alheio; se a identidade ou término permanecer ambíguo, reportar `uncertain` e impedir liberação para nova execução.
 - Cobrir término normal, cancelamento, processo travado, falha/EOF e fallback, com processos falsos e testes reais controlados no Windows.
 
-**Não alterar**
+#### Não alterar
 
 - Nunca matar processo usando somente PID antigo ou executar `taskkill` contra alvo não verificado. `[Fonte: docs_devout/02-design/contrato-orquestracao-mvp.md#Seção 5.2]`
 - Não implementar reinício automático de task, recuperação de Git ou avanço do workflow por `exitCode=0`. `[Fonte: docs_devout/02-design/contrato-orquestracao-mvp.md#Seções 6 e 9]`
 
-**Entregáveis**
+#### Entregáveis
 
 - Interface de encerramento/cancelamento do Driver e diagnóstico de término ou incerteza, reutilizável pelo Runner.
 - Testes de término normal, `abort`, timeout e `taskkill` em ambiente descartável, com evidências de inspeção de processos.
 
-**Critério de conclusão**
+#### Critério de conclusão
 
 - Teste real em Windows demonstra `abort` seguido de encerramento verificado; um processo descartável deliberadamente resistente aciona fallback seguro e tem sua árvore relevante confirmada como terminada. Processo/identidade ambíguos bloqueiam avanço, e chamadas repetidas de encerramento não atingem processos alheios. Cobertura parcial do cenário **T07** do contrato, sem afirmar que o controle assíncrono do Runner já está pronto.
 

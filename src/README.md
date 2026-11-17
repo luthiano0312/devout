@@ -1,4 +1,4 @@
-# Pi Driver — M01-T01
+# Pi Driver — M01-T01 / M01-T02
 
 Node.js sem dependências externas; lançamento suportado em **Windows nativo**.
 Código/testes ficam neste diretório; nenhum log operacional ou histórico é gravado pelo Driver.
@@ -10,6 +10,8 @@ npm.cmd --prefix src test
 # Opcional: usa o provedor já configurado no Pi; pode consumir tokens.
 $env:DEVOUT_PI_CMD = (Get-Command pi.cmd).Source
 npm.cmd --prefix src run test:smoke
+# Cancelamento real com provedor (também opt-in; executar separadamente):
+npm.cmd --prefix src run test:cancel
 ```
 
 Não instala pacotes nem exige Gateway OpenClaw. Testes automatizados usam processos
@@ -23,10 +25,13 @@ O smoke envia apenas `get_state` e um pedido de resposta `PONG-DEVOUT-T01`.
 Valida texto em memória, aceitação `started`, ausência de erro do assistente,
 `agent_settled aborted=false`, stdin ainda aberto e término normal. Observa identidade
 (PID + criação) do launcher/descendentes via CIM e verifica ausência após o término.
-Fecha stdin; após 10 s, somente no teste, pode usar `taskkill /PID /T /F` sobre a
-identidade observada do launcher vivo. Encerramento forçado reprova o smoke.
+Encerra pelo `shutdown()` do Driver, com prova de Job Object e conferência CIM
+independente. Encerramento forçado reprova esse smoke normal.
+O `test:cancel` pede uma lista inofensiva, cancela enquanto a atividade está aberta
+e exige `abort` aceito, término comprovado sem força e ausência dos PIDs observados.
+A suíte `test` não usa provedor: inclui árvore Node descartável resistente ao EOF,
+fallback real no Windows e processo alheio de controle que deve permanecer vivo.
 Processo sobrevivente/incerto produz diagnóstico de reconciliação, não aprovação.
-A implementação reutilizável de cancelamento/escalonamento será entregue na T02.
 
 Saída é um resumo JSON sanitizado: contagens/tipos de eventos, booleanos, versões,
 código de saída e encerramento. Não imprime respostas, session IDs, modelo,
@@ -57,15 +62,20 @@ try {
   // run.assistantError sinaliza message_end error/aborted/errorMessage ou abort.
   // Nada disso aprova uma task: o consumidor precisa validar as evidências.
 } finally {
-  driver.closeInput(); // solicita EOF ordenado, não mata o processo
-  const closed = await driver.closed; // { exitCode, signal, failure }
-  // Este await não tem escalonamento: consumidor deve supervisionar o prazo (T02).
+  // Após trabalho terminado: shutdown(). Se houver atividade, usar cancel().
+  const ended = await driver.cancel(); // abort limitado + EOF + eventual fallback
+  if (!ended.canRelease) {
+    // NÃO iniciar outro Pi nem liberar futura trava; reconciliar a incerteza.
+  }
+  // canRelease comprova término, não sucesso funcional nem aprovação da task.
 }
 ```
 
 - `startPi({ piCmd, cwd, profile, commandTimeoutMs, maxRecordBytes, maxQueuedBytes, maxPending })`
-  retorna o Driver imediatamente; `ready` resolve em `spawn` e rejeita falha de lançamento.
+  retorna o Driver imediatamente; `ready` resolve após identificar e atribuir o host
+  ao Job Object e lançar o `.cmd`. Rejeita falha de lançamento/supervisão.
   Não significa que o protocolo já respondeu: usar `getState` para comprovar comunicação.
+  Aceita também os prazos de processo documentados abaixo.
 - `getState({ timeoutMs }?)` equivale a `command('get_state', {}, options)`.
 - `prompt(message, { timeoutMs }?)` retorna **somente a resposta de aceitação**.
   Para gerenciar eventos manualmente, inscrever-se antes de chamar. Não misturar essa
@@ -80,14 +90,27 @@ try {
   **e** `agent_settled`, em qualquer ordem. Recusa outro observador/prompt enquanto ativo.
   `handled`/`queued` rejeitam com `PROMPT_NOT_STARTED`, sem inventar um fim de execução.
   Não encerra stdin ao receber `agent_end`, aceitação ou settlement.
-- `closeInput()` é idempotente; `closed` resolve somente no `close` do filho.
-  Isso não comprova sozinho ausência de descendentes nem resultado técnico da task.
+- `shutdown()` recusa atividade/comando pendente com `WORK_ACTIVE`, sem fechar stdin.
+  Após settlement, solicita EOF, verifica término e escala somente se necessário.
+- `cancel()` / `shutdown({ cancel: true })` impedem novos comandos, rejeitam observação
+  ativa com `CANCELLED`, tentam RPC `abort` por prazo limitado e então solicitam EOF.
+  O primeiro pedido de término prevalece; chamadas concorrentes/repetidas retornam
+  a **mesma Promise/resultado**, inclusive em `uncertain`, sem repetir sinais/matança.
+- `closeInput()` continua sendo primitiva de EOF, não substitui `cancel()`/`shutdown()`.
+  No Driver gerenciado aciona supervisão automática, com resultado de cancelamento,
+  mas o EOF já enviado impede um novo RPC `abort`. Falhas terminais também acionam
+  supervisão automaticamente. Consultar `await driver.cancel()` para obter o resultado.
+- `closed` resolve no `close` do host `{ exitCode, signal, failure }`, **sem** prova
+  de descendentes. Só o resultado de `shutdown`/`cancel` autoriza liberar processos.
 - Eventos: `event` (registros espontâneos), `response` (resposta correlacionada),
   `unmatchedResponse` (ID desconhecido, **nunca** sucesso do comando pendente),
-  `diagnostic` (Buffer stderr), `failure` (uma falha terminal), `closed`.
+  `diagnostic` (Buffer stderr), `failure` (uma falha terminal), `closed`,
+  `lifecycle` (string de estado), `termination` (resultado final).
   Callbacks seguem a semântica síncrona de `EventEmitter`; não lançar exceções neles.
-- `new PiDriver(child, options)` é a entrada para testes com processo recém-criado
-  e três pipes; o chamador mantém responsabilidade pela supervisão desse processo.
+- `new PiDriver(child, options)` mantém a entrada de transporte com três pipes.
+  Sem observador de árvore, término gerenciado retorna `uncertain / NO_PROCESS_OBSERVER`;
+  o chamador supervisiona o processo. `options.processTree` é uma costura confiável
+  para testes, não configuração aceita de modelos ou do `startPi`.
 
 ### Limites e erros
 
@@ -111,9 +134,65 @@ Os códigos correspondentes incluem `INVALID_JSON`, `INVALID_RECORD`,
 `INVALID_RESPONSE`, `UNCORRELATED_RESPONSE`, `COMMAND_MISMATCH`, `RECORD_LIMIT`,
 `TRUNCATED_RECORD`, `EARLY_EOF`, `EARLY_EXIT`, `SPAWN_ERROR`, `STDIN_ERROR`,
 `STDOUT_ERROR`, `STDERR_ERROR`, `PROCESS_EXIT`, `COMMAND_TIMEOUT`, `SETTLED_TIMEOUT`.
-Não há retry/restart automático. O consumidor deve aguardar `closed`, diagnosticar
-um processo que não sai e bloquear nova execução incerta. Término robusto,
-identidade de árvore, abort e liberação de exclusividade não estão nesta task.
+Não há retry/restart automático. O consumidor deve aguardar o término gerenciado,
+diagnosticar processo que não sai e bloquear nova execução incerta.
+A trava global e sua recuperação pertencem à T03, não a este Driver.
+
+### Término gerenciado e identidade (M01-T02)
+
+`lifecycle`: `starting` → `running` → `stopping` → `terminated` ou `uncertain`.
+O resultado inclui `state`, `canRelease`, `cancelled`, `abortAccepted`, `forced`,
+`taskkillExitCode`, `processesGone`, `workCompleted`, `exitCode`, `signal`,
+`failureCode`, `identity` (PID, criação FILETIME e imagem do host), `observed`
+(PID + criação) e, na incerteza, `reason`. `workCompleted` exige settlement
+não abortado/sem erro observado e encerramento normal; não é aprovação técnica.
+Falha ou cancelamento podem ter `canRelease=true` **sem** sucesso funcional.
+`forced=true` registra tentativa de escalonamento, não sucesso do `taskkill`.
+
+Prazos configuráveis em `startPi`/`PiDriver` (ms; inteiros positivos `<=2^31-1`):
+
+| Opção | Inicial | Uso |
+| --- | ---: | --- |
+| `abortTimeoutMs` | 5000 | Aguardar resposta correlacionada de abort |
+| `normalWaitMs` | 10000 | Aguardar EOF/término normal e árvore vazia |
+| `forceCommandMs` | 5000 | Limitar execução de taskkill |
+| `forceWaitMs` | 5000 | Conferir árvore após fallback |
+| `pollMs` | 100 | Intervalo máximo entre consultas do Job |
+
+São orçamentos por fase, medidos com relógio monotônico, não timeout funcional
+do modelo. Cada consulta ao helper é limitada a 15 s e pode exceder o orçamento
+da fase por esse limite. Bootstrap/ack do host: 25 s por espera; host não liberado
+expira em 30 s. Falha de observação retorna incerteza, nunca sucesso presumido.
+
+`startPi` cria um **host Node temporário bloqueado**, sem Pi iniciado. Um helper
+PowerShell privado carrega as APIs Windows via `Add-Type` (sem dependências externas,
+instalação ou alteração de política), verifica pai/imagem/criação, mantém handle
+nativo do host e o atribui a um **Job Object sem breakaway**. Só então o host lança
+as linhas `.cmd` fixas. O console `conhost.exe` criado antes dessa atribuição também
+é incluído, somente se pai, criação, imagem do sistema e handle vivo forem verificados.
+Isso contabiliza descendentes pelo kernel, inclusive subprocessos que nascem entre
+consultas ou sobrevivem ao pai. Não depende apenas de snapshots de ParentProcessId.
+O helper não é serviço residente nem interface do futuro cancelamento de Runner;
+usa somente canais privados desta execução e fecha seus handles ao final.
+
+Depois do prazo normal, o helper só executa `taskkill /PID <host> /T /F` se o handle
+original ainda está vivo, a criação confere e a árvore enumerada pertence ao Job.
+Mantém handles dos alvos inspecionados durante o fallback para evitar reciclagem
+de identidade. Links de pai antigos para processos fora do Job recusam a operação.
+Nunca há fallback contra root já encerrado. `SIGTERM` não é usado como prova nem
+como substituto de abort. `taskkill` textual/exit 0 tampouco é prova: são necessários
+Job vazio, root encerrado e `close` dos pipes antes de `canRelease=true`.
+
+Root ausente com filhos vivos, falha de acesso/Job/identidade, sobrevivente ou perda
+do observador produzem `uncertain, canRelease=false`. Não há retry de matança nem
+reset no mesmo Driver. Preservar diagnóstico/workspace e reconciliar manualmente;
+o consumidor **não pode liberar a futura trava/iniciar nova execução** nesse caso.
+Falha de bootstrap impede liberação do host para lançar Pi. Nenhuma garantia de
+sandbox/isolamento forte é oferecida contra processos privilegiados externos,
+brokers ou manipulação hostil dos processos da conta Windows.
+
+Até 4096 identidades observadas são mantidas em memória por execução; exceder o
+limite bloqueia a prova de término. O Driver não grava logs nem comandos de processos.
 
 ### Lançamento `.cmd` e segurança
 

@@ -5,7 +5,8 @@
   "type": "module",
   "engines": { "node": ">=22.19.0" },
   "scripts": {
-    "test": "node --test test/pi-driver.test.mjs",
-    "test:smoke": "node test/smoke-pi.mjs"
+    "test": "node --test --test-concurrency=1 test/*.test.mjs",
+    "test:smoke": "node test/smoke-pi.mjs",
+    "test:cancel": "node test/smoke-cancel.mjs"
   }
 }
