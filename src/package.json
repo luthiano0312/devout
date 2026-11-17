@@ -1,0 +1,11 @@
+{
+  "name": "devout-slice1",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "engines": { "node": ">=22.19.0" },
+  "scripts": {
+    "test": "node --test test/pi-driver.test.mjs",
+    "test:smoke": "node test/smoke-pi.mjs"
+  }
+}

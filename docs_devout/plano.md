@@ -79,7 +79,7 @@ A ordem das tasks abaixo é a sequência recomendada. As dependências são cons
 
 ### M01-T01 — Pi Driver: transporte e observação RPC
 
-**Fazer**
+#### Fazer
 
 - Criar o módulo Node.js que inicia `pi.cmd --mode rpc` no Windows com `stdin`/`stdout` persistentes, sem concatenar argumentos variáveis de shell. Verificar o método de lançamento de `.cmd` no Windows; tratar o aviso `DEP0190` observado na prova como condição a corrigir, não como solução aceita.
 - Implementar transporte **JSONL** (uma mensagem por linha) com recepção incremental, correlação por `id`/`requestId`, distinção entre resposta a comando e evento espontâneo e separação de `stderr` diagnóstico. Suportar ao menos `get_state` e `prompt` como operações do driver.
@@ -87,18 +87,18 @@ A ordem das tasks abaixo é a sequência recomendada. As dependências são cons
 - Expor eventos e indicação de fim de execução; **não** tratar `prompt` aceito, `agent_end` ou `exitCode=0` como execução finalizada. Aguardar e registrar `agent_settled`; o julgamento de entrega de uma task ficará para outro slice.
 - Criar teste automatizado com processo RPC falso e *smoke test* em Pi real. Usar comandos/entrada de teste inofensivos.
 
-**Não alterar**
+#### Não alterar
 
 - Não criar serviço HTTP, daemon Node permanente, Named Pipe nem framework genérico de agentes. `[Fonte: docs_devout/02-design/contrato-orquestracao-mvp.md#Seções 2–4]`
 - Não implementar lógica de papéis, ciclo de revisão, `registro.md`, Git Gateway ou commits automáticos. `[Fonte: docs_devout/02-design/contrato-orquestracao-mvp.md#Seções 1, 3 e 11]`
 - Não executar comandos de shell com argumentos arbitrários controlados por modelo nem guardar logs brutos que possam conter credenciais. `[Fonte: docs_devout/reference/01-registro-integracao-openclaw-pi-e-decisoes.md#Seções 4 e 8]`
 
-**Entregáveis**
+#### Entregáveis
 
 - Módulo reutilizável Pi Driver, com interface mínima documentada para iniciar, enviar comandos, observar eventos e ler resultado/erro RPC.
 - Testes automatizados do parser/transporte e roteiro reproduzível do teste com Pi real, com evidências sanitizadas.
 
-**Critério de conclusão**
+#### Critério de conclusão
 
 - No Windows, uma execução real retorna `get_state` correlacionado e um `prompt` simples chega a `agent_settled` com evidência observável, sem fechamento prematuro do `stdin`; um processo falso demonstra corretamente resposta intercalada, JSON fragmentado, erro/EOF/timeout e ausência de falso sucesso. Um processo iniciado no teste não pode ficar abandonado sem diagnóstico; encerramento robusto será completado na T02. Os experimentos existentes no `devout` devem ser consultados, sem necessidade de copiá-los ou editá-los.
 
