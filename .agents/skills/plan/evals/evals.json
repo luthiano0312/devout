@@ -1,0 +1,23 @@
+{
+  "skill_name": "plan",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "Planeja o próximo marco deste repositório. Tenho backlog e decisões de arquitetura em docs/, mas não sei ainda quais tasks entram.",
+      "expected_output": "Pede confirmação para iniciar antes de inspecionar o projeto ou escrever arquivos; após a confirmação, procura as fontes citadas e pede as que faltarem. Propõe o recorte com base apenas em fontes existentes e não salva plano nem registro sem aprovação explícita da proposta completa.",
+      "files": []
+    },
+    {
+      "id": 2,
+      "prompt": "Tenho um rascunho para o próximo marco: Task A cria uma ordem e, antes de listar recursos disponíveis, executa a reconciliação dos recursos vencidos. Task B, que vem depois, implementa essa reconciliação e a tela de recursos. Quero reorganizar esse rascunho em tasks executáveis, mas não tenho as fontes de requisitos aqui na conversa.",
+      "expected_output": "Pede confirmação antes de analisar; identifica que A depende de parte de B e propõe separar a reconciliação da tela e ordenar as tasks; não inventa requisitos ausentes nem salva plano/registro sem fontes e aprovação explícita.",
+      "files": []
+    },
+    {
+      "id": 3,
+      "prompt": "A task de pagamentos passou por três correções e a quarta revisão ainda encontrou um achado importante. Replaneja essa task sem fechar o marco. O registro e os achados estão em outro repositório; ainda não compartilhei esses arquivos.",
+      "expected_output": "Pede confirmação inicial e os arquivos persistidos necessários (task, registro e achados); não finge ter lido outro repositório nem reinvestiga diff/código. Quando tiver fontes, propõe reespecificar in place no mesmo marco; reinício substancial recebe novos IDs livres, com a antiga substituída, evidências preservadas, reaproveitamento explícito e dependências reconciliadas. Não reseta contagens por mudança cosmética, não grava sem aprovação e exige versionar o replanejamento antes da nova execução.",
+      "files": []
+    }
+  ]
+}

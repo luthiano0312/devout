@@ -1,0 +1,238 @@
+{
+  "main": {
+    "id": "7794aa9b8a8e77b8",
+    "type": "split",
+    "children": [
+      {
+        "id": "9ba8d937bbc024fc",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "b77ff12a7ce3b917",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "proposta-plano-slice-1.md",
+                "mode": "source",
+                "source": false
+              },
+              "icon": "lucide-file",
+              "title": "proposta-plano-slice-1"
+            }
+          }
+        ]
+      }
+    ],
+    "direction": "vertical"
+  },
+  "left": {
+    "id": "f235a0fe1f56ff0d",
+    "type": "split",
+    "children": [
+      {
+        "id": "e0a8b1320569e094",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "5b82ae909e9f076d",
+            "type": "leaf",
+            "state": {
+              "type": "file-explorer",
+              "state": {
+                "sortOrder": "alphabetical",
+                "autoReveal": false,
+                "showSearch": false,
+                "searchQuery": ""
+              },
+              "icon": "lucide-folder-closed",
+              "title": "Explorador de arquivos"
+            }
+          },
+          {
+            "id": "1cdf720a3c9c2eb5",
+            "type": "leaf",
+            "state": {
+              "type": "search",
+              "state": {
+                "query": "",
+                "matchingCase": false,
+                "explainSearch": false,
+                "collapseAll": false,
+                "extraContext": false,
+                "sortOrder": "alphabetical"
+              },
+              "icon": "lucide-search",
+              "title": "Procurar"
+            }
+          },
+          {
+            "id": "fe4296ef525185c9",
+            "type": "leaf",
+            "state": {
+              "type": "bookmarks",
+              "state": {
+                "showSearch": false,
+                "searchQuery": ""
+              },
+              "icon": "lucide-bookmark",
+              "title": "Marcadores"
+            }
+          }
+        ]
+      }
+    ],
+    "direction": "horizontal",
+    "width": 200.5
+  },
+  "right": {
+    "id": "9b150995221ab93e",
+    "type": "split",
+    "children": [
+      {
+        "id": "b13a17c22d72fbb8",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "b051265bde4e93e5",
+            "type": "leaf",
+            "state": {
+              "type": "backlink",
+              "state": {
+                "collapseAll": false,
+                "extraContext": false,
+                "sortOrder": "alphabetical",
+                "showSearch": false,
+                "searchQuery": "",
+                "backlinkCollapsed": false,
+                "unlinkedCollapsed": true
+              },
+              "icon": "links-coming-in",
+              "title": "Links inversos"
+            }
+          },
+          {
+            "id": "35aeebfaec45790e",
+            "type": "leaf",
+            "state": {
+              "type": "outgoing-link",
+              "state": {
+                "linksCollapsed": false,
+                "unlinkedCollapsed": true
+              },
+              "icon": "links-going-out",
+              "title": "Links de saída"
+            }
+          },
+          {
+            "id": "d7e4e69f95ae0778",
+            "type": "leaf",
+            "state": {
+              "type": "tag",
+              "state": {
+                "sortOrder": "frequency",
+                "useHierarchy": true,
+                "showSearch": false,
+                "searchQuery": ""
+              },
+              "icon": "lucide-tags",
+              "title": "Etiquetas"
+            }
+          },
+          {
+            "id": "f0790cbc0750a1c9",
+            "type": "leaf",
+            "state": {
+              "type": "all-properties",
+              "state": {
+                "sortOrder": "frequency",
+                "showSearch": false,
+                "searchQuery": ""
+              },
+              "icon": "lucide-archive",
+              "title": "Todas as propriedades"
+            }
+          },
+          {
+            "id": "a95677251c78713d",
+            "type": "leaf",
+            "state": {
+              "type": "outline",
+              "state": {
+                "followCursor": false,
+                "showSearch": false,
+                "searchQuery": ""
+              },
+              "icon": "lucide-list",
+              "title": "Sumário"
+            }
+          }
+        ]
+      }
+    ],
+    "direction": "horizontal",
+    "width": 300,
+    "collapsed": true
+  },
+  "left-ribbon": {
+    "hiddenItems": {
+      "switcher:Abrir a troca rápida": false,
+      "graph:Abrir visualização em gráfico": false,
+      "canvas:Criar novo canvas": false,
+      "daily-notes:Abrir a nota de hoje": false,
+      "templates:Inserir modelo": false,
+      "command-palette:Abrir paleta de comandos": false,
+      "bases:Criar nova base": false,
+      "obsidian-git:Open Git source control": false
+    }
+  },
+  "active": "b77ff12a7ce3b917",
+  "lastOpenFiles": [
+    "02-design/adr/0009-impressao-escpos-web-serial.md",
+    "reference/impressao-termica.md",
+    "reference/convencoes-de-desenvolvimento.md",
+    "plano.md",
+    "execucao/evidencias/M01-T49/validacao.json",
+    "execucao/evidencias/M01-T49/navegador.mjs",
+    "execucao/evidencias/M01-T49/navegador-build.json",
+    "execucao/evidencias/M01-T49/navegador-hmr.json",
+    "execucao/evidencias/M01-T49/matriz-24.22.3.json",
+    "execucao/evidencias/M01-T49/matriz-24.22.2.json",
+    "execucao/evidencias/M01-T49/fontes.json",
+    "execucao/evidencias/M01-T49/descarte.json",
+    "execucao/evidencias/M01-T49",
+    "execucao/achados/task-M01-T49-revisao-1.md",
+    "execucao/achados/task-M01-T49-relatorio.md",
+    "execucao/evidencias/M01-T48/validacao.json",
+    "execucao/achados/task-M01-T48-revisao-1.md",
+    "execucao/achados/task-M01-T48-relatorio.md",
+    "pendencias-delpoy.md",
+    "Sem título.md",
+    "execucao/achados/task-M01-T42-relatorio.md",
+    "execucao/achados/task-M01-T39-revisao-1.md",
+    "execucao/achados/task-M01-T39-relatorio.md",
+    "execucao/achados/task-M01-T43-revisao-1.md",
+    "execucao/achados/task-M01-T45-revisao-1.md",
+    "execucao/achados/task-M01-T45-relatorio.md",
+    "execucao/achados/task-M01-T44-revisao-1.md",
+    "execucao/achados/task-M01-T44-relatorio.md",
+    "execucao/achados/task-M01-T43-relatorio.md",
+    "execucao/achados/task-M01-T42-revisao-1.md",
+    "execucao/registro.md",
+    "02-design/estrategia-de-testes.md",
+    "execucao/achados/task-M01-T38-revisao-1.md",
+    "execucao/achados/task-M01-T38-relatorio.md",
+    "01-requisitos/regras-de-negocio.md",
+    "execucao/decisao-M01-T32.md",
+    "execucao/evidencias/M01-T36/complemento/driver-1366-lista-2.png",
+    "execucao/evidencias/M01-T36/complemento/driver-1366-lista-3.png",
+    "execucao/evidencias/M01-T36/complemento/driver-1366-lista-dialogo.png",
+    "execucao/evidencias/M01-T36/complemento/driver-1366-confirmacao.png",
+    "execucao/evidencias/M01-T36/complemento/driver-1366-confirmacao-dialogo.png",
+    "execucao/evidencias/M01-T36/complemento/driver-390-lista-2.png",
+    "execucao/evidencias/M01-T36/complemento/driver-390-lista-3.png",
+    "execucao/evidencias/M01-T36/complemento/driver-390-lista-dialogo.png",
+    "execucao/evidencias/M01-T36/complemento/driver-390-confirmacao.png",
+    "execucao/evidencias/M01-T36/complemento/driver-390-confirmacao-dialogo.png"
+  ]
+}

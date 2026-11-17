@@ -1,0 +1,659 @@
+{
+  "version": 1,
+  "tasks": {
+    "M01-T39": {
+      "task": {"path": "docs_sistema_recolhe/plano.md", "selector": {"heading": "## M01-T39 — Revalidar a integração completa"}},
+      "common": [
+        {"path": "docs_sistema_recolhe/plano.md", "selector": {"heading": "## Ordem e dependências — continuação M01-T33–T40"}}
+      ],
+      "sources": [
+        {
+          "path": "docs_sistema_recolhe/plano.md",
+          "sections": [
+            {"selector": {"start": null, "end_before": "Neste planejamento houve leitura de fontes,"}, "phase": "initial"},
+            {"selector": {"start": "Neste planejamento houve leitura de fontes,", "end_before": null}, "phase": "deferred"}
+          ]
+        },
+        {
+          "path": "docs_sistema_recolhe/02-design/estrategia-de-testes.md",
+          "sections": [
+            {"selector": {"start": null, "end_before": "Acentos e raster"}, "phase": "initial"},
+            {"selector": {"start": "Acentos e raster", "end_before": "aceita a via sem acentos"}, "phase": "deferred"},
+            {"selector": {"start": "aceita a via sem acentos", "end_before": "Não foi identificado, na investigação,"}, "phase": "initial"},
+            {"selector": {"start": "Não foi identificado, na investigação,", "end_before": "Build/watch sobre código"}, "phase": "deferred"},
+            {"selector": {"start": "Build/watch sobre código", "end_before": "##### Complemento factual — correção compatível do parser (27/10/2026, M01-T31)"}, "phase": "initial"},
+            {"selector": {"start": "##### Complemento factual — correção compatível do parser (27/10/2026, M01-T31)", "end_before": "não se usa mais a aceitação anterior"}, "phase": "deferred"},
+            {"selector": {"start": "não se usa mais a aceitação anterior", "end_before": "- Duas instalações finais por lock"}, "phase": "initial"},
+            {"selector": {"start": "- Duas instalações finais por lock", "end_before": "## 11. Aceitação com usuários"}, "phase": "deferred"},
+            {"selector": {"start": "## 11. Aceitação com usuários", "end_before": null}, "phase": "initial"}
+          ]
+        },
+        {
+          "path": "docs_sistema_recolhe/how-to/fluxo-de-desenvolvimento.md",
+          "sections": [
+            {"selector": {"start": null, "end_before": "Seleção validada em"}, "phase": "initial"},
+            {"selector": {"start": "Seleção validada em", "end_before": "`src/.node-version` indica"}, "phase": "deferred"},
+            {"selector": {"start": "`src/.node-version` indica", "end_before": "não foi necessário instalar um gerenciador"}, "phase": "initial"},
+            {"selector": {"start": "não foi necessário instalar um gerenciador", "end_before": "Para reproduzir a instalação pelos locks"}, "phase": "deferred"},
+            {"selector": {"start": "Para reproduzir a instalação pelos locks", "end_before": "No ensaio T34,"}, "phase": "initial"},
+            {"selector": {"start": "No ensaio T34,", "end_before": "Outras plataformas/arquiteturas"}, "phase": "deferred"},
+            {"selector": {"start": "Outras plataformas/arquiteturas", "end_before": null}, "phase": "initial"}
+          ]
+        },
+        {
+          "path": "docs_sistema_recolhe/reference/impressao-termica.md",
+          "sections": [
+            {"selector": {"start": null, "end_before": "> **Decisão vigente:**"}, "phase": "deferred"},
+            {"selector": {"start": "> **Decisão vigente:**", "end_before": "## 1. Equipamento recebido"}, "phase": "initial"},
+            {"selector": {"start": "## 1. Equipamento recebido", "end_before": "## 3. Limitações aceitas pelo responsável"}, "phase": "deferred"},
+            {"selector": {"start": "## 3. Limitações aceitas pelo responsável", "end_before": " validado "}, "phase": "initial"},
+            {"selector": {"start": " validado ", "end_before": " e homologar os dois conteúdos reais."}, "phase": "deferred"},
+            {"selector": {"start": " e homologar os dois conteúdos reais.", "end_before": "A v5"}, "phase": "initial"},
+            {"selector": {"start": "A v5", "end_before": "QR Pix, chave e link de contato"}, "phase": "deferred"},
+            {"selector": {"start": "QR Pix, chave e link de contato", "end_before": "A permissão"}, "phase": "initial"},
+            {"selector": {"start": "A permissão", "end_before": "pode ser revogada e precisa"}, "phase": "deferred"},
+            {"selector": {"start": "pode ser revogada e precisa", "end_before": " (3 s "}, "phase": "initial"},
+            {"selector": {"start": " (3 s ", "end_before": ". Vincular a ação a identificador efêmero"}, "phase": "deferred"},
+            {"selector": {"start": ". Vincular a ação a identificador efêmero", "end_before": null}, "phase": "initial"}
+          ]
+        },
+        {
+          "path": "docs_sistema_recolhe/02-design/adr/0009-impressao-escpos-web-serial.md",
+          "sections": [
+            {"selector": {"start": null, "end_before": "## Contexto"}, "phase": "initial"},
+            {"selector": {"start": "## Contexto", "end_before": "RN10f exige OS salva"}, "phase": "deferred"},
+            {"selector": {"start": "RN10f exige OS salva", "end_before": "- Positivo: elimina aplicativo"}, "phase": "initial"},
+            {"selector": {"start": "- Positivo: elimina aplicativo", "end_before": "- Positivo: mantém separação"}, "phase": "deferred"},
+            {"selector": {"start": "- Positivo: mantém separação", "end_before": "- Positivo: conexão por trabalho"}, "phase": "initial"},
+            {"selector": {"start": "- Positivo: conexão por trabalho", "end_before": "- Negativo: API tem disponibilidade"}, "phase": "deferred"},
+            {"selector": {"start": "- Negativo: API tem disponibilidade", "end_before": "- Limite: QR genérico aprovado"}, "phase": "initial"},
+            {"selector": {"start": "- Limite: QR genérico aprovado", "end_before": null}, "phase": "deferred"}
+          ]
+        },
+        {
+          "path": "docs_sistema_recolhe/02-design/arquitetura-hld.md",
+          "sections": [
+            {"selector": {"start": null, "end_before": "### Decisões estruturantes"}, "phase": "initial"},
+            {"selector": {"start": "### Decisões estruturantes", "end_before": "## 4. Componentes e responsabilidades"}, "phase": "deferred"},
+            {"selector": {"start": "## 4. Componentes e responsabilidades", "end_before": "A comunicação, persistência da autorização,"}, "phase": "initial"},
+            {"selector": {"start": "A comunicação, persistência da autorização,", "end_before": "O documento segue a ordem fechada"}, "phase": "deferred"},
+            {"selector": {"start": "O documento segue a ordem fechada", "end_before": null}, "phase": "initial"}
+          ]
+        },
+        {
+          "path": "docs_sistema_recolhe/01-requisitos/escopo.md",
+          "sections": [
+            {"selector": {"start": null, "end_before": ", com comunicação"}, "phase": "initial"},
+            {"selector": {"start": ", com comunicação", "end_before": "Integração da via da Recolhe"}, "phase": "deferred"},
+            {"selector": {"start": "Integração da via da Recolhe", "end_before": "Comunicação direta"}, "phase": "initial"},
+            {"selector": {"start": "Comunicação direta", "end_before": "detectar API e contexto seguro"}, "phase": "deferred"},
+            {"selector": {"start": "detectar API e contexto seguro", "end_before": "rawBT"}, "phase": "initial"},
+            {"selector": {"start": "rawBT", "end_before": "Aceitos texto térmico"}, "phase": "deferred"},
+            {"selector": {"start": "Aceitos texto térmico", "end_before": null}, "phase": "initial"}
+          ]
+        },
+        {"path": "docs_sistema_recolhe/01-requisitos/backlog.md", "sections": [{"selector": {"start": null, "end_before": null}, "phase": "initial"}]},
+        {"path": "docs_sistema_recolhe/01-requisitos/regras-de-negocio.md", "sections": [{"selector": {"start": null, "end_before": null}, "phase": "initial"}]},
+        {"path": "docs_sistema_recolhe/01-requisitos/casos-de-uso/uc01-cadastrar-os.md", "sections": [{"selector": {"start": null, "end_before": null}, "phase": "initial"}]},
+        {"path": "docs_sistema_recolhe/02-design/modelo-de-dados.md", "sections": [{"selector": {"start": null, "end_before": null}, "phase": "initial"}]},
+        {"path": "docs_sistema_recolhe/02-design/adr/0001-monolito-laravel-inertia-react.md", "sections": [{"selector": {"start": null, "end_before": null}, "phase": "initial"}]},
+        {"path": "docs_sistema_recolhe/02-design/adr/0002-sqlite-como-banco-inicial.md", "sections": [{"selector": {"start": null, "end_before": null}, "phase": "initial"}]},
+        {"path": "docs_sistema_recolhe/02-design/adr/0006-autenticacao-por-navegador-e-inatividade.md", "sections": [{"selector": {"start": null, "end_before": null}, "phase": "initial"}]},
+        {"path": "docs_sistema_recolhe/02-design/ui-ux/prototipo-baixa-fidelidade.md", "sections": [{"selector": {"start": null, "end_before": null}, "phase": "initial"}]},
+        {"path": "docs_sistema_recolhe/reference/convencoes-de-desenvolvimento.md", "sections": [{"selector": {"start": null, "end_before": null}, "phase": "initial"}]},
+        {"path": "docs_sistema_recolhe/how-to/demonstracao-local.md", "sections": [{"selector": {"start": null, "end_before": null}, "phase": "initial"}]},
+        {"path": "src/.node-version", "sections": [{"selector": {"start": null, "end_before": null}, "phase": "initial"}]}
+      ]
+    },
+    "M01-T42": {
+      "task": {"path": "docs_sistema_recolhe/plano.md", "selector": {"heading": "## M01-T42 — Corrigir as dependências Symfony da DEP-01"}},
+      "common": [
+        {"path": "docs_sistema_recolhe/plano.md", "selector": {"heading": "## Ordem e dependências — continuação M01-T33–T40"}}
+      ],
+      "sources": [
+        {
+          "path": "docs_sistema_recolhe/plano.md",
+          "sections": [
+            {"selector": {"start": null, "end_before": "Neste planejamento houve leitura de fontes,"}, "phase": "initial"},
+            {"selector": {"start": "Neste planejamento houve leitura de fontes,", "end_before": null}, "phase": "deferred"}
+          ]
+        },
+        {
+          "path": "docs_sistema_recolhe/02-design/estrategia-de-testes.md",
+          "sections": [
+            {"selector": {"start": null, "end_before": "Acentos e raster"}, "phase": "initial"},
+            {"selector": {"start": "Acentos e raster", "end_before": "aceita a via sem acentos"}, "phase": "deferred"},
+            {"selector": {"start": "aceita a via sem acentos", "end_before": "Não foi identificado, na investigação,"}, "phase": "initial"},
+            {"selector": {"start": "Não foi identificado, na investigação,", "end_before": "Build/watch sobre código"}, "phase": "deferred"},
+            {"selector": {"start": "Build/watch sobre código", "end_before": "##### Complemento factual — correção compatível do parser (27/10/2026, M01-T31)"}, "phase": "initial"},
+            {"selector": {"start": "##### Complemento factual — correção compatível do parser (27/10/2026, M01-T31)", "end_before": "não se usa mais a aceitação anterior"}, "phase": "deferred"},
+            {"selector": {"start": "não se usa mais a aceitação anterior", "end_before": "- Duas instalações finais por lock"}, "phase": "initial"},
+            {"selector": {"start": "- Duas instalações finais por lock", "end_before": "## 11. Aceitação com usuários"}, "phase": "deferred"},
+            {"selector": {"start": "## 11. Aceitação com usuários", "end_before": null}, "phase": "initial"}
+          ]
+        },
+        {
+          "path": "docs_sistema_recolhe/how-to/fluxo-de-desenvolvimento.md",
+          "sections": [
+            {"selector": {"start": null, "end_before": "Seleção validada em"}, "phase": "initial"},
+            {"selector": {"start": "Seleção validada em", "end_before": "`src/.node-version` indica"}, "phase": "deferred"},
+            {"selector": {"start": "`src/.node-version` indica", "end_before": "não foi necessário instalar um gerenciador"}, "phase": "initial"},
+            {"selector": {"start": "não foi necessário instalar um gerenciador", "end_before": "Para reproduzir a instalação pelos locks"}, "phase": "deferred"},
+            {"selector": {"start": "Para reproduzir a instalação pelos locks", "end_before": "No ensaio T34,"}, "phase": "initial"},
+            {"selector": {"start": "No ensaio T34,", "end_before": "Outras plataformas/arquiteturas"}, "phase": "deferred"},
+            {"selector": {"start": "Outras plataformas/arquiteturas", "end_before": null}, "phase": "initial"}
+          ]
+        },
+        {
+          "path": "docs_sistema_recolhe/02-design/arquitetura-hld.md",
+          "sections": [
+            {"selector": {"start": null, "end_before": "### Decisões estruturantes"}, "phase": "initial"},
+            {"selector": {"start": "### Decisões estruturantes", "end_before": "## 4. Componentes e responsabilidades"}, "phase": "deferred"},
+            {"selector": {"start": "## 4. Componentes e responsabilidades", "end_before": "A comunicação, persistência da autorização,"}, "phase": "initial"},
+            {"selector": {"start": "A comunicação, persistência da autorização,", "end_before": "O documento segue a ordem fechada"}, "phase": "deferred"},
+            {"selector": {"start": "O documento segue a ordem fechada", "end_before": null}, "phase": "initial"}
+          ]
+        },
+        {"path": "docs_sistema_recolhe/01-requisitos/regras-de-negocio.md", "sections": [{"selector": {"start": null, "end_before": null}, "phase": "initial"}]},
+        {"path": "docs_sistema_recolhe/01-requisitos/casos-de-uso/uc01-cadastrar-os.md", "sections": [{"selector": {"start": null, "end_before": null}, "phase": "initial"}]},
+        {"path": "docs_sistema_recolhe/02-design/modelo-de-dados.md", "sections": [{"selector": {"start": null, "end_before": null}, "phase": "initial"}]},
+        {"path": "docs_sistema_recolhe/02-design/adr/0001-monolito-laravel-inertia-react.md", "sections": [{"selector": {"start": null, "end_before": null}, "phase": "initial"}]},
+        {"path": "docs_sistema_recolhe/02-design/adr/0006-autenticacao-por-navegador-e-inatividade.md", "sections": [{"selector": {"start": null, "end_before": null}, "phase": "initial"}]},
+        {"path": "docs_sistema_recolhe/reference/convencoes-de-desenvolvimento.md", "sections": [{"selector": {"start": null, "end_before": null}, "phase": "initial"}]},
+        {"path": "src/.node-version", "sections": [{"selector": {"start": null, "end_before": null}, "phase": "initial"}]}
+      ]
+    },
+    "M01-T43": {
+      "task": {"path": "docs_sistema_recolhe/plano.md", "selector": {"heading": "## M01-T43 — Corrigir follow-redirects na cadeia do Axios"}},
+      "common": [
+        {"path": "docs_sistema_recolhe/plano.md", "selector": {"heading": "## Ordem e dependências — continuação M01-T33–T40"}}
+      ],
+      "sources": [
+        {
+          "path": "docs_sistema_recolhe/plano.md",
+          "sections": [
+            {"selector": {"start": null, "end_before": "Neste planejamento houve leitura de fontes,"}, "phase": "initial"},
+            {"selector": {"start": "Neste planejamento houve leitura de fontes,", "end_before": null}, "phase": "deferred"}
+          ]
+        },
+        {
+          "path": "docs_sistema_recolhe/02-design/estrategia-de-testes.md",
+          "sections": [
+            {"selector": {"start": null, "end_before": "Acentos e raster"}, "phase": "initial"},
+            {"selector": {"start": "Acentos e raster", "end_before": "aceita a via sem acentos"}, "phase": "deferred"},
+            {"selector": {"start": "aceita a via sem acentos", "end_before": "Não foi identificado, na investigação,"}, "phase": "initial"},
+            {"selector": {"start": "Não foi identificado, na investigação,", "end_before": "Build/watch sobre código"}, "phase": "deferred"},
+            {"selector": {"start": "Build/watch sobre código", "end_before": "##### Complemento factual — correção compatível do parser (27/10/2026, M01-T31)"}, "phase": "initial"},
+            {"selector": {"start": "##### Complemento factual — correção compatível do parser (27/10/2026, M01-T31)", "end_before": "não se usa mais a aceitação anterior"}, "phase": "deferred"},
+            {"selector": {"start": "não se usa mais a aceitação anterior", "end_before": "- Duas instalações finais por lock"}, "phase": "initial"},
+            {"selector": {"start": "- Duas instalações finais por lock", "end_before": "## 11. Aceitação com usuários"}, "phase": "deferred"},
+            {"selector": {"start": "## 11. Aceitação com usuários", "end_before": null}, "phase": "initial"}
+          ]
+        },
+        {
+          "path": "docs_sistema_recolhe/how-to/fluxo-de-desenvolvimento.md",
+          "sections": [
+            {"selector": {"start": null, "end_before": "Seleção validada em"}, "phase": "initial"},
+            {"selector": {"start": "Seleção validada em", "end_before": "`src/.node-version` indica"}, "phase": "deferred"},
+            {"selector": {"start": "`src/.node-version` indica", "end_before": "não foi necessário instalar um gerenciador"}, "phase": "initial"},
+            {"selector": {"start": "não foi necessário instalar um gerenciador", "end_before": "Para reproduzir a instalação pelos locks"}, "phase": "deferred"},
+            {"selector": {"start": "Para reproduzir a instalação pelos locks", "end_before": "No ensaio T34,"}, "phase": "initial"},
+            {"selector": {"start": "No ensaio T34,", "end_before": "Outras plataformas/arquiteturas"}, "phase": "deferred"},
+            {"selector": {"start": "Outras plataformas/arquiteturas", "end_before": null}, "phase": "initial"}
+          ]
+        },
+        {"path": "docs_sistema_recolhe/01-requisitos/regras-de-negocio.md", "sections": [{"selector": {"start": null, "end_before": null}, "phase": "initial"}]},
+        {"path": "docs_sistema_recolhe/01-requisitos/casos-de-uso/uc01-cadastrar-os.md", "sections": [{"selector": {"start": null, "end_before": null}, "phase": "initial"}]},
+        {"path": "docs_sistema_recolhe/02-design/adr/0001-monolito-laravel-inertia-react.md", "sections": [{"selector": {"start": null, "end_before": null}, "phase": "initial"}]},
+        {"path": "docs_sistema_recolhe/reference/convencoes-de-desenvolvimento.md", "sections": [{"selector": {"start": null, "end_before": null}, "phase": "initial"}]},
+        {"path": "src/.node-version", "sections": [{"selector": {"start": null, "end_before": null}, "phase": "initial"}]}
+      ]
+    },
+    "M01-T44": {
+      "task": {"path": "docs_sistema_recolhe/plano.md", "selector": {"heading": "## M01-T44 — Revalidar a integração após o tratamento da DEP-01"}},
+      "common": [
+        {"path": "docs_sistema_recolhe/plano.md", "selector": {"heading": "## Ordem e dependências — continuação M01-T33–T40"}}
+      ],
+      "sources": [
+        {
+          "path": "docs_sistema_recolhe/plano.md",
+          "sections": [
+            {"selector": {"start": null, "end_before": "Neste planejamento houve leitura de fontes,"}, "phase": "initial"},
+            {"selector": {"start": "Neste planejamento houve leitura de fontes,", "end_before": null}, "phase": "deferred"}
+          ]
+        },
+        {
+          "path": "docs_sistema_recolhe/02-design/estrategia-de-testes.md",
+          "sections": [
+            {"selector": {"start": null, "end_before": "Acentos e raster"}, "phase": "initial"},
+            {"selector": {"start": "Acentos e raster", "end_before": "aceita a via sem acentos"}, "phase": "deferred"},
+            {"selector": {"start": "aceita a via sem acentos", "end_before": "Não foi identificado, na investigação,"}, "phase": "initial"},
+            {"selector": {"start": "Não foi identificado, na investigação,", "end_before": "Build/watch sobre código"}, "phase": "deferred"},
+            {"selector": {"start": "Build/watch sobre código", "end_before": "##### Complemento factual — correção compatível do parser (27/10/2026, M01-T31)"}, "phase": "initial"},
+            {"selector": {"start": "##### Complemento factual — correção compatível do parser (27/10/2026, M01-T31)", "end_before": "não se usa mais a aceitação anterior"}, "phase": "deferred"},
+            {"selector": {"start": "não se usa mais a aceitação anterior", "end_before": "- Duas instalações finais por lock"}, "phase": "initial"},
+            {"selector": {"start": "- Duas instalações finais por lock", "end_before": "## 11. Aceitação com usuários"}, "phase": "deferred"},
+            {"selector": {"start": "## 11. Aceitação com usuários", "end_before": null}, "phase": "initial"}
+          ]
+        },
+        {
+          "path": "docs_sistema_recolhe/how-to/fluxo-de-desenvolvimento.md",
+          "sections": [
+            {"selector": {"start": null, "end_before": "Seleção validada em"}, "phase": "initial"},
+            {"selector": {"start": "Seleção validada em", "end_before": "`src/.node-version` indica"}, "phase": "deferred"},
+            {"selector": {"start": "`src/.node-version` indica", "end_before": "não foi necessário instalar um gerenciador"}, "phase": "initial"},
+            {"selector": {"start": "não foi necessário instalar um gerenciador", "end_before": "Para reproduzir a instalação pelos locks"}, "phase": "deferred"},
+            {"selector": {"start": "Para reproduzir a instalação pelos locks", "end_before": "No ensaio T34,"}, "phase": "initial"},
+            {"selector": {"start": "No ensaio T34,", "end_before": "Outras plataformas/arquiteturas"}, "phase": "deferred"},
+            {"selector": {"start": "Outras plataformas/arquiteturas", "end_before": null}, "phase": "initial"}
+          ]
+        },
+        {
+          "path": "docs_sistema_recolhe/reference/impressao-termica.md",
+          "sections": [
+            {"selector": {"start": null, "end_before": "> **Decisão vigente:**"}, "phase": "deferred"},
+            {"selector": {"start": "> **Decisão vigente:**", "end_before": "## 1. Equipamento recebido"}, "phase": "initial"},
+            {"selector": {"start": "## 1. Equipamento recebido", "end_before": "## 3. Limitações aceitas pelo responsável"}, "phase": "deferred"},
+            {"selector": {"start": "## 3. Limitações aceitas pelo responsável", "end_before": " validado "}, "phase": "initial"},
+            {"selector": {"start": " validado ", "end_before": " e homologar os dois conteúdos reais."}, "phase": "deferred"},
+            {"selector": {"start": " e homologar os dois conteúdos reais.", "end_before": "A v5"}, "phase": "initial"},
+            {"selector": {"start": "A v5", "end_before": "QR Pix, chave e link de contato"}, "phase": "deferred"},
+            {"selector": {"start": "QR Pix, chave e link de contato", "end_before": "A permissão"}, "phase": "initial"},
+            {"selector": {"start": "A permissão", "end_before": "pode ser revogada e precisa"}, "phase": "deferred"},
+            {"selector": {"start": "pode ser revogada e precisa", "end_before": " (3 s "}, "phase": "initial"},
+            {"selector": {"start": " (3 s ", "end_before": ". Vincular a ação a identificador efêmero"}, "phase": "deferred"},
+            {"selector": {"start": ". Vincular a ação a identificador efêmero", "end_before": null}, "phase": "initial"}
+          ]
+        },
+        {
+          "path": "docs_sistema_recolhe/02-design/adr/0009-impressao-escpos-web-serial.md",
+          "sections": [
+            {"selector": {"start": null, "end_before": "## Contexto"}, "phase": "initial"},
+            {"selector": {"start": "## Contexto", "end_before": "RN10f exige OS salva"}, "phase": "deferred"},
+            {"selector": {"start": "RN10f exige OS salva", "end_before": "- Positivo: elimina aplicativo"}, "phase": "initial"},
+            {"selector": {"start": "- Positivo: elimina aplicativo", "end_before": "- Positivo: mantém separação"}, "phase": "deferred"},
+            {"selector": {"start": "- Positivo: mantém separação", "end_before": "- Positivo: conexão por trabalho"}, "phase": "initial"},
+            {"selector": {"start": "- Positivo: conexão por trabalho", "end_before": "- Negativo: API tem disponibilidade"}, "phase": "deferred"},
+            {"selector": {"start": "- Negativo: API tem disponibilidade", "end_before": "- Limite: QR genérico aprovado"}, "phase": "initial"},
+            {"selector": {"start": "- Limite: QR genérico aprovado", "end_before": null}, "phase": "deferred"}
+          ]
+        },
+        {
+          "path": "docs_sistema_recolhe/02-design/arquitetura-hld.md",
+          "sections": [
+            {"selector": {"start": null, "end_before": "### Decisões estruturantes"}, "phase": "initial"},
+            {"selector": {"start": "### Decisões estruturantes", "end_before": "## 4. Componentes e responsabilidades"}, "phase": "deferred"},
+            {"selector": {"start": "## 4. Componentes e responsabilidades", "end_before": "A comunicação, persistência da autorização,"}, "phase": "initial"},
+            {"selector": {"start": "A comunicação, persistência da autorização,", "end_before": "O documento segue a ordem fechada"}, "phase": "deferred"},
+            {"selector": {"start": "O documento segue a ordem fechada", "end_before": null}, "phase": "initial"}
+          ]
+        },
+        {
+          "path": "docs_sistema_recolhe/01-requisitos/escopo.md",
+          "sections": [
+            {"selector": {"start": null, "end_before": ", com comunicação"}, "phase": "initial"},
+            {"selector": {"start": ", com comunicação", "end_before": "Integração da via da Recolhe"}, "phase": "deferred"},
+            {"selector": {"start": "Integração da via da Recolhe", "end_before": "Comunicação direta"}, "phase": "initial"},
+            {"selector": {"start": "Comunicação direta", "end_before": "detectar API e contexto seguro"}, "phase": "deferred"},
+            {"selector": {"start": "detectar API e contexto seguro", "end_before": "rawBT"}, "phase": "initial"},
+            {"selector": {"start": "rawBT", "end_before": "Aceitos texto térmico"}, "phase": "deferred"},
+            {"selector": {"start": "Aceitos texto térmico", "end_before": null}, "phase": "initial"}
+          ]
+        },
+        {"path": "docs_sistema_recolhe/01-requisitos/backlog.md", "sections": [{"selector": {"start": null, "end_before": null}, "phase": "initial"}]},
+        {"path": "docs_sistema_recolhe/01-requisitos/regras-de-negocio.md", "sections": [{"selector": {"start": null, "end_before": null}, "phase": "initial"}]},
+        {"path": "docs_sistema_recolhe/01-requisitos/casos-de-uso/uc01-cadastrar-os.md", "sections": [{"selector": {"start": null, "end_before": null}, "phase": "initial"}]},
+        {"path": "docs_sistema_recolhe/02-design/modelo-de-dados.md", "sections": [{"selector": {"start": null, "end_before": null}, "phase": "initial"}]},
+        {"path": "docs_sistema_recolhe/02-design/adr/0001-monolito-laravel-inertia-react.md", "sections": [{"selector": {"start": null, "end_before": null}, "phase": "initial"}]},
+        {"path": "docs_sistema_recolhe/02-design/adr/0002-sqlite-como-banco-inicial.md", "sections": [{"selector": {"start": null, "end_before": null}, "phase": "initial"}]},
+        {"path": "docs_sistema_recolhe/02-design/adr/0006-autenticacao-por-navegador-e-inatividade.md", "sections": [{"selector": {"start": null, "end_before": null}, "phase": "initial"}]},
+        {"path": "docs_sistema_recolhe/02-design/ui-ux/prototipo-baixa-fidelidade.md", "sections": [{"selector": {"start": null, "end_before": null}, "phase": "initial"}]},
+        {"path": "docs_sistema_recolhe/reference/convencoes-de-desenvolvimento.md", "sections": [{"selector": {"start": null, "end_before": null}, "phase": "initial"}]},
+        {"path": "docs_sistema_recolhe/how-to/demonstracao-local.md", "sections": [{"selector": {"start": null, "end_before": null}, "phase": "initial"}]},
+        {"path": "src/.node-version", "sections": [{"selector": {"start": null, "end_before": null}, "phase": "initial"}]}
+      ]
+    },
+    "M01-T45": {
+      "task": {"path": "docs_sistema_recolhe/plano.md", "selector": {"heading": "## M01-T45 — Diagnosticar RUNTIME-T42-01"}},
+      "common": [
+        {"path": "docs_sistema_recolhe/plano.md", "selector": {"heading": "## Ordem e dependências — continuação M01-T33–T40"}}
+      ],
+      "sources": [
+        {
+          "path": "docs_sistema_recolhe/plano.md",
+          "sections": [
+            {"selector": {"start": null, "end_before": "Neste planejamento houve leitura de fontes,"}, "phase": "initial"},
+            {"selector": {"start": "Neste planejamento houve leitura de fontes,", "end_before": null}, "phase": "deferred"}
+          ]
+        },
+        {
+          "path": "docs_sistema_recolhe/02-design/estrategia-de-testes.md",
+          "sections": [
+            {"selector": {"start": null, "end_before": "### 10.1 Matriz — dependências e gate completo"}, "phase": "deferred"},
+            {"selector": {"start": "### 10.1 Matriz — dependências e gate completo", "end_before": "#### Aceitação explícita do risco remanescente — Tailwind 3 (14/10/2026)"}, "phase": "initial"},
+            {"selector": {"start": "#### Aceitação explícita do risco remanescente — Tailwind 3 (14/10/2026)", "end_before": null}, "phase": "deferred"}
+          ]
+        },
+        {
+          "path": "docs_sistema_recolhe/how-to/fluxo-de-desenvolvimento.md",
+          "sections": [
+            {"selector": {"start": null, "end_before": "Seleção validada em"}, "phase": "initial"},
+            {"selector": {"start": "Seleção validada em", "end_before": "`src/.node-version` indica"}, "phase": "deferred"},
+            {"selector": {"start": "`src/.node-version` indica", "end_before": "não foi necessário instalar um gerenciador"}, "phase": "initial"},
+            {"selector": {"start": "não foi necessário instalar um gerenciador", "end_before": "Para reproduzir a instalação pelos locks"}, "phase": "deferred"},
+            {"selector": {"start": "Para reproduzir a instalação pelos locks", "end_before": "No ensaio T34,"}, "phase": "initial"},
+            {"selector": {"start": "No ensaio T34,", "end_before": "Outras plataformas/arquiteturas"}, "phase": "deferred"},
+            {"selector": {"start": "Outras plataformas/arquiteturas", "end_before": null}, "phase": "initial"}
+          ]
+        },
+        {"path": "docs_sistema_recolhe/02-design/adr/0001-monolito-laravel-inertia-react.md", "sections": [{"selector": {"start": null, "end_before": null}, "phase": "initial"}]},
+        {"path": "docs_sistema_recolhe/reference/convencoes-de-desenvolvimento.md", "sections": [{"selector": {"start": null, "end_before": null}, "phase": "initial"}]},
+        {"path": "src/.node-version", "sections": [{"selector": {"start": null, "end_before": null}, "phase": "initial"}]}
+      ]
+    },
+    "M01-T46": {
+      "task": {"path": "docs_sistema_recolhe/plano.md", "selector": {"heading": "## M01-T46 — Aplicar e validar o tratamento do runtime"}},
+      "common": [
+        {"path": "docs_sistema_recolhe/plano.md", "selector": {"heading": "## Ordem e dependências — continuação M01-T33–T40"}}
+      ],
+      "sources": [
+        {
+          "path": "docs_sistema_recolhe/plano.md",
+          "sections": [
+            {"selector": {"start": null, "end_before": "Neste planejamento houve leitura de fontes,"}, "phase": "initial"},
+            {"selector": {"start": "Neste planejamento houve leitura de fontes,", "end_before": null}, "phase": "deferred"}
+          ]
+        },
+        {
+          "path": "docs_sistema_recolhe/02-design/estrategia-de-testes.md",
+          "sections": [
+            {"selector": {"start": null, "end_before": "### 10.1 Matriz — dependências e gate completo"}, "phase": "deferred"},
+            {"selector": {"start": "### 10.1 Matriz — dependências e gate completo", "end_before": "#### Aceitação explícita do risco remanescente — Tailwind 3 (14/10/2026)"}, "phase": "initial"},
+            {"selector": {"start": "#### Aceitação explícita do risco remanescente — Tailwind 3 (14/10/2026)", "end_before": null}, "phase": "deferred"}
+          ]
+        },
+        {
+          "path": "docs_sistema_recolhe/how-to/fluxo-de-desenvolvimento.md",
+          "sections": [
+            {"selector": {"start": null, "end_before": "Seleção validada em"}, "phase": "initial"},
+            {"selector": {"start": "Seleção validada em", "end_before": "`src/.node-version` indica"}, "phase": "deferred"},
+            {"selector": {"start": "`src/.node-version` indica", "end_before": "não foi necessário instalar um gerenciador"}, "phase": "initial"},
+            {"selector": {"start": "não foi necessário instalar um gerenciador", "end_before": "Para reproduzir a instalação pelos locks"}, "phase": "deferred"},
+            {"selector": {"start": "Para reproduzir a instalação pelos locks", "end_before": "No ensaio T34,"}, "phase": "initial"},
+            {"selector": {"start": "No ensaio T34,", "end_before": "Outras plataformas/arquiteturas"}, "phase": "deferred"},
+            {"selector": {"start": "Outras plataformas/arquiteturas", "end_before": null}, "phase": "initial"}
+          ]
+        },
+        {"path": "docs_sistema_recolhe/02-design/adr/0001-monolito-laravel-inertia-react.md", "sections": [{"selector": {"start": null, "end_before": null}, "phase": "initial"}]},
+        {"path": "docs_sistema_recolhe/reference/convencoes-de-desenvolvimento.md", "sections": [{"selector": {"start": null, "end_before": null}, "phase": "initial"}]},
+        {"path": "src/.node-version", "sections": [{"selector": {"start": null, "end_before": null}, "phase": "initial"}]}
+      ]
+    },
+    "M01-T47": {
+      "task": {"path": "docs_sistema_recolhe/plano.md", "selector": {"heading": "## M01-T47 — Revalidar a integração e emitir novo parecer da DEP-01"}},
+      "common": [
+        {"path": "docs_sistema_recolhe/plano.md", "selector": {"heading": "## Ordem e dependências — continuação M01-T33–T40"}}
+      ],
+      "sources": [
+        {
+          "path": "docs_sistema_recolhe/plano.md",
+          "sections": [
+            {"selector": {"start": null, "end_before": "Neste planejamento houve leitura de fontes,"}, "phase": "initial"},
+            {"selector": {"start": "Neste planejamento houve leitura de fontes,", "end_before": null}, "phase": "deferred"}
+          ]
+        },
+        {
+          "path": "docs_sistema_recolhe/02-design/estrategia-de-testes.md",
+          "sections": [
+            {"selector": {"start": null, "end_before": "Acentos e raster"}, "phase": "initial"},
+            {"selector": {"start": "Acentos e raster", "end_before": "aceita a via sem acentos"}, "phase": "deferred"},
+            {"selector": {"start": "aceita a via sem acentos", "end_before": "Não foi identificado, na investigação,"}, "phase": "initial"},
+            {"selector": {"start": "Não foi identificado, na investigação,", "end_before": "Build/watch sobre código"}, "phase": "deferred"},
+            {"selector": {"start": "Build/watch sobre código", "end_before": "##### Complemento factual — correção compatível do parser (27/10/2026, M01-T31)"}, "phase": "initial"},
+            {"selector": {"start": "##### Complemento factual — correção compatível do parser (27/10/2026, M01-T31)", "end_before": "não se usa mais a aceitação anterior"}, "phase": "deferred"},
+            {"selector": {"start": "não se usa mais a aceitação anterior", "end_before": "- Duas instalações finais por lock"}, "phase": "initial"},
+            {"selector": {"start": "- Duas instalações finais por lock", "end_before": "## 11. Aceitação com usuários"}, "phase": "deferred"},
+            {"selector": {"start": "## 11. Aceitação com usuários", "end_before": null}, "phase": "initial"}
+          ]
+        },
+        {
+          "path": "docs_sistema_recolhe/how-to/fluxo-de-desenvolvimento.md",
+          "sections": [
+            {"selector": {"start": null, "end_before": "Seleção validada em"}, "phase": "initial"},
+            {"selector": {"start": "Seleção validada em", "end_before": "`src/.node-version` indica"}, "phase": "deferred"},
+            {"selector": {"start": "`src/.node-version` indica", "end_before": "não foi necessário instalar um gerenciador"}, "phase": "initial"},
+            {"selector": {"start": "não foi necessário instalar um gerenciador", "end_before": "Para reproduzir a instalação pelos locks"}, "phase": "deferred"},
+            {"selector": {"start": "Para reproduzir a instalação pelos locks", "end_before": "No ensaio T34,"}, "phase": "initial"},
+            {"selector": {"start": "No ensaio T34,", "end_before": "Outras plataformas/arquiteturas"}, "phase": "deferred"},
+            {"selector": {"start": "Outras plataformas/arquiteturas", "end_before": null}, "phase": "initial"}
+          ]
+        },
+        {
+          "path": "docs_sistema_recolhe/reference/impressao-termica.md",
+          "sections": [
+            {"selector": {"start": null, "end_before": "> **Decisão vigente:**"}, "phase": "deferred"},
+            {"selector": {"start": "> **Decisão vigente:**", "end_before": "## 1. Equipamento recebido"}, "phase": "initial"},
+            {"selector": {"start": "## 1. Equipamento recebido", "end_before": "## 3. Limitações aceitas pelo responsável"}, "phase": "deferred"},
+            {"selector": {"start": "## 3. Limitações aceitas pelo responsável", "end_before": " validado "}, "phase": "initial"},
+            {"selector": {"start": " validado ", "end_before": " e homologar os dois conteúdos reais."}, "phase": "deferred"},
+            {"selector": {"start": " e homologar os dois conteúdos reais.", "end_before": "A v5"}, "phase": "initial"},
+            {"selector": {"start": "A v5", "end_before": "QR Pix, chave e link de contato"}, "phase": "deferred"},
+            {"selector": {"start": "QR Pix, chave e link de contato", "end_before": "A permissão"}, "phase": "initial"},
+            {"selector": {"start": "A permissão", "end_before": "pode ser revogada e precisa"}, "phase": "deferred"},
+            {"selector": {"start": "pode ser revogada e precisa", "end_before": " (3 s "}, "phase": "initial"},
+            {"selector": {"start": " (3 s ", "end_before": ". Vincular a ação a identificador efêmero"}, "phase": "deferred"},
+            {"selector": {"start": ". Vincular a ação a identificador efêmero", "end_before": null}, "phase": "initial"}
+          ]
+        },
+        {
+          "path": "docs_sistema_recolhe/02-design/adr/0009-impressao-escpos-web-serial.md",
+          "sections": [
+            {"selector": {"start": null, "end_before": "## Contexto"}, "phase": "initial"},
+            {"selector": {"start": "## Contexto", "end_before": "RN10f exige OS salva"}, "phase": "deferred"},
+            {"selector": {"start": "RN10f exige OS salva", "end_before": "- Positivo: elimina aplicativo"}, "phase": "initial"},
+            {"selector": {"start": "- Positivo: elimina aplicativo", "end_before": "- Positivo: mantém separação"}, "phase": "deferred"},
+            {"selector": {"start": "- Positivo: mantém separação", "end_before": "- Positivo: conexão por trabalho"}, "phase": "initial"},
+            {"selector": {"start": "- Positivo: conexão por trabalho", "end_before": "- Negativo: API tem disponibilidade"}, "phase": "deferred"},
+            {"selector": {"start": "- Negativo: API tem disponibilidade", "end_before": "- Limite: QR genérico aprovado"}, "phase": "initial"},
+            {"selector": {"start": "- Limite: QR genérico aprovado", "end_before": null}, "phase": "deferred"}
+          ]
+        },
+        {
+          "path": "docs_sistema_recolhe/02-design/arquitetura-hld.md",
+          "sections": [
+            {"selector": {"start": null, "end_before": "### Decisões estruturantes"}, "phase": "initial"},
+            {"selector": {"start": "### Decisões estruturantes", "end_before": "## 4. Componentes e responsabilidades"}, "phase": "deferred"},
+            {"selector": {"start": "## 4. Componentes e responsabilidades", "end_before": "A comunicação, persistência da autorização,"}, "phase": "initial"},
+            {"selector": {"start": "A comunicação, persistência da autorização,", "end_before": "O documento segue a ordem fechada"}, "phase": "deferred"},
+            {"selector": {"start": "O documento segue a ordem fechada", "end_before": null}, "phase": "initial"}
+          ]
+        },
+        {
+          "path": "docs_sistema_recolhe/01-requisitos/escopo.md",
+          "sections": [
+            {"selector": {"start": null, "end_before": ", com comunicação"}, "phase": "initial"},
+            {"selector": {"start": ", com comunicação", "end_before": "Integração da via da Recolhe"}, "phase": "deferred"},
+            {"selector": {"start": "Integração da via da Recolhe", "end_before": "Comunicação direta"}, "phase": "initial"},
+            {"selector": {"start": "Comunicação direta", "end_before": "detectar API e contexto seguro"}, "phase": "deferred"},
+            {"selector": {"start": "detectar API e contexto seguro", "end_before": "rawBT"}, "phase": "initial"},
+            {"selector": {"start": "rawBT", "end_before": "Aceitos texto térmico"}, "phase": "deferred"},
+            {"selector": {"start": "Aceitos texto térmico", "end_before": null}, "phase": "initial"}
+          ]
+        },
+        {"path": "docs_sistema_recolhe/01-requisitos/backlog.md", "sections": [{"selector": {"start": null, "end_before": null}, "phase": "initial"}]},
+        {"path": "docs_sistema_recolhe/01-requisitos/regras-de-negocio.md", "sections": [{"selector": {"start": null, "end_before": null}, "phase": "initial"}]},
+        {"path": "docs_sistema_recolhe/01-requisitos/casos-de-uso/uc01-cadastrar-os.md", "sections": [{"selector": {"start": null, "end_before": null}, "phase": "initial"}]},
+        {"path": "docs_sistema_recolhe/02-design/modelo-de-dados.md", "sections": [{"selector": {"start": null, "end_before": null}, "phase": "initial"}]},
+        {"path": "docs_sistema_recolhe/02-design/adr/0001-monolito-laravel-inertia-react.md", "sections": [{"selector": {"start": null, "end_before": null}, "phase": "initial"}]},
+        {"path": "docs_sistema_recolhe/02-design/adr/0002-sqlite-como-banco-inicial.md", "sections": [{"selector": {"start": null, "end_before": null}, "phase": "initial"}]},
+        {"path": "docs_sistema_recolhe/02-design/adr/0006-autenticacao-por-navegador-e-inatividade.md", "sections": [{"selector": {"start": null, "end_before": null}, "phase": "initial"}]},
+        {"path": "docs_sistema_recolhe/02-design/ui-ux/prototipo-baixa-fidelidade.md", "sections": [{"selector": {"start": null, "end_before": null}, "phase": "initial"}]},
+        {"path": "docs_sistema_recolhe/reference/convencoes-de-desenvolvimento.md", "sections": [{"selector": {"start": null, "end_before": null}, "phase": "initial"}]},
+        {"path": "docs_sistema_recolhe/how-to/demonstracao-local.md", "sections": [{"selector": {"start": null, "end_before": null}, "phase": "initial"}]},
+        {"path": "src/.node-version", "sections": [{"selector": {"start": null, "end_before": null}, "phase": "initial"}]}
+      ]
+    },
+    "M01-T48": {
+      "task": {"path": "docs_sistema_recolhe/plano.md", "selector": {"heading": "## M01-T48 — Corrigir Undici na cadeia npm"}},
+      "common": [{"path": "docs_sistema_recolhe/plano.md", "selector": {"heading": "## Ordem e dependências — continuação M01-T33–T40"}}],
+      "sources": [
+        {"path": "docs_sistema_recolhe/plano.md", "sections": [
+          {"selector": {"start": null, "end_before": "Neste planejamento houve leitura de fontes,"}, "phase": "initial"},
+          {"selector": {"start": "Neste planejamento houve leitura de fontes,", "end_before": null}, "phase": "deferred"}
+        ]},
+        {"path": "docs_sistema_recolhe/02-design/estrategia-de-testes.md", "sections": [
+          {"selector": {"start": null, "end_before": "### 10.1 Matriz — dependências e gate completo"}, "phase": "deferred"},
+          {"selector": {"start": "### 10.1 Matriz — dependências e gate completo", "end_before": "#### Aceitação explícita do risco remanescente — Tailwind 3 (14/10/2026)"}, "phase": "initial"},
+          {"selector": {"start": "#### Aceitação explícita do risco remanescente — Tailwind 3 (14/10/2026)", "end_before": null}, "phase": "deferred"}
+        ]},
+        {"path": "docs_sistema_recolhe/how-to/fluxo-de-desenvolvimento.md", "sections": [
+          {"selector": {"start": null, "end_before": "Seleção validada em"}, "phase": "initial"},
+          {"selector": {"start": "Seleção validada em", "end_before": "`src/.node-version` indica"}, "phase": "deferred"},
+          {"selector": {"start": "`src/.node-version` indica", "end_before": "não foi necessário instalar um gerenciador"}, "phase": "initial"},
+          {"selector": {"start": "não foi necessário instalar um gerenciador", "end_before": "Para reproduzir a instalação pelos locks"}, "phase": "deferred"},
+          {"selector": {"start": "Para reproduzir a instalação pelos locks", "end_before": "No ensaio T34,"}, "phase": "initial"},
+          {"selector": {"start": "No ensaio T34,", "end_before": "Outras plataformas/arquiteturas"}, "phase": "deferred"},
+          {"selector": {"start": "Outras plataformas/arquiteturas", "end_before": null}, "phase": "initial"}
+        ]},
+        {"path": "docs_sistema_recolhe/02-design/adr/0001-monolito-laravel-inertia-react.md", "sections": [{"selector": {"start": null, "end_before": null}, "phase": "initial"}]},
+        {"path": "docs_sistema_recolhe/reference/convencoes-de-desenvolvimento.md", "sections": [{"selector": {"start": null, "end_before": null}, "phase": "initial"}]},
+        {"path": "src/.node-version", "sections": [{"selector": {"start": null, "end_before": null}, "phase": "initial"}]}
+      ]
+    },
+    "M01-T49": {
+      "task": {"path": "docs_sistema_recolhe/plano.md", "selector": {"heading": "## M01-T49 — Atualizar a segurança do runtime Node"}},
+      "common": [{"path": "docs_sistema_recolhe/plano.md", "selector": {"heading": "## Ordem e dependências — continuação M01-T33–T40"}}],
+      "sources": [
+        {"path": "docs_sistema_recolhe/plano.md", "sections": [
+          {"selector": {"start": null, "end_before": "Neste planejamento houve leitura de fontes,"}, "phase": "initial"},
+          {"selector": {"start": "Neste planejamento houve leitura de fontes,", "end_before": null}, "phase": "deferred"}
+        ]},
+        {"path": "docs_sistema_recolhe/02-design/estrategia-de-testes.md", "sections": [
+          {"selector": {"start": null, "end_before": "### 10.1 Matriz — dependências e gate completo"}, "phase": "deferred"},
+          {"selector": {"start": "### 10.1 Matriz — dependências e gate completo", "end_before": "#### Aceitação explícita do risco remanescente — Tailwind 3 (14/10/2026)"}, "phase": "initial"},
+          {"selector": {"start": "#### Aceitação explícita do risco remanescente — Tailwind 3 (14/10/2026)", "end_before": null}, "phase": "deferred"}
+        ]},
+        {"path": "docs_sistema_recolhe/how-to/fluxo-de-desenvolvimento.md", "sections": [
+          {"selector": {"start": null, "end_before": "Seleção validada em"}, "phase": "initial"},
+          {"selector": {"start": "Seleção validada em", "end_before": "`src/.node-version` indica"}, "phase": "deferred"},
+          {"selector": {"start": "`src/.node-version` indica", "end_before": "não foi necessário instalar um gerenciador"}, "phase": "initial"},
+          {"selector": {"start": "não foi necessário instalar um gerenciador", "end_before": "Para reproduzir a instalação pelos locks"}, "phase": "deferred"},
+          {"selector": {"start": "Para reproduzir a instalação pelos locks", "end_before": "No ensaio T34,"}, "phase": "initial"},
+          {"selector": {"start": "No ensaio T34,", "end_before": "Outras plataformas/arquiteturas"}, "phase": "deferred"},
+          {"selector": {"start": "Outras plataformas/arquiteturas", "end_before": null}, "phase": "initial"}
+        ]},
+        {"path": "docs_sistema_recolhe/02-design/adr/0001-monolito-laravel-inertia-react.md", "sections": [{"selector": {"start": null, "end_before": null}, "phase": "initial"}]},
+        {"path": "docs_sistema_recolhe/reference/convencoes-de-desenvolvimento.md", "sections": [{"selector": {"start": null, "end_before": null}, "phase": "initial"}]},
+        {"path": "src/.node-version", "sections": [{"selector": {"start": null, "end_before": null}, "phase": "initial"}]}
+      ]
+    },
+    "M01-T50": {
+      "task": {"path": "docs_sistema_recolhe/plano.md", "selector": {"heading": "## M01-T50 — Validar a operação sob restrição"}},
+      "common": [{"path": "docs_sistema_recolhe/plano.md", "selector": {"heading": "## Ordem e dependências — continuação M01-T33–T40"}}],
+      "sources": [
+        {"path": "docs_sistema_recolhe/plano.md", "sections": [
+          {"selector": {"start": null, "end_before": "Neste planejamento houve leitura de fontes,"}, "phase": "initial"},
+          {"selector": {"start": "Neste planejamento houve leitura de fontes,", "end_before": null}, "phase": "deferred"}
+        ]},
+        {"path": "docs_sistema_recolhe/02-design/estrategia-de-testes.md", "sections": [
+          {"selector": {"start": null, "end_before": "### 10.1 Matriz — dependências e gate completo"}, "phase": "deferred"},
+          {"selector": {"start": "### 10.1 Matriz — dependências e gate completo", "end_before": "#### Aceitação explícita do risco remanescente — Tailwind 3 (14/10/2026)"}, "phase": "initial"},
+          {"selector": {"start": "#### Aceitação explícita do risco remanescente — Tailwind 3 (14/10/2026)", "end_before": null}, "phase": "deferred"}
+        ]},
+        {"path": "docs_sistema_recolhe/how-to/fluxo-de-desenvolvimento.md", "sections": [
+          {"selector": {"start": null, "end_before": "Seleção validada em"}, "phase": "initial"},
+          {"selector": {"start": "Seleção validada em", "end_before": "`src/.node-version` indica"}, "phase": "deferred"},
+          {"selector": {"start": "`src/.node-version` indica", "end_before": "não foi necessário instalar um gerenciador"}, "phase": "initial"},
+          {"selector": {"start": "não foi necessário instalar um gerenciador", "end_before": "Para reproduzir a instalação pelos locks"}, "phase": "deferred"},
+          {"selector": {"start": "Para reproduzir a instalação pelos locks", "end_before": "No ensaio T34,"}, "phase": "initial"},
+          {"selector": {"start": "No ensaio T34,", "end_before": "Outras plataformas/arquiteturas"}, "phase": "deferred"},
+          {"selector": {"start": "Outras plataformas/arquiteturas", "end_before": null}, "phase": "initial"}
+        ]},
+        {"path": "docs_sistema_recolhe/02-design/adr/0001-monolito-laravel-inertia-react.md", "sections": [{"selector": {"start": null, "end_before": null}, "phase": "initial"}]},
+        {"path": "docs_sistema_recolhe/reference/convencoes-de-desenvolvimento.md", "sections": [{"selector": {"start": null, "end_before": null}, "phase": "initial"}]},
+        {"path": "src/.node-version", "sections": [{"selector": {"start": null, "end_before": null}, "phase": "initial"}]}
+      ]
+    },
+    "M01-T51": {
+      "task": {"path": "docs_sistema_recolhe/plano.md", "selector": {"heading": "## M01-T51 — Revalidar a integração sob o aceite delimitado"}},
+      "common": [{"path": "docs_sistema_recolhe/plano.md", "selector": {"heading": "## Ordem e dependências — continuação M01-T33–T40"}}],
+      "sources": [
+        {"path": "docs_sistema_recolhe/plano.md", "sections": [
+          {"selector": {"start": null, "end_before": "Neste planejamento houve leitura de fontes,"}, "phase": "initial"},
+          {"selector": {"start": "Neste planejamento houve leitura de fontes,", "end_before": null}, "phase": "deferred"}
+        ]},
+        {"path": "docs_sistema_recolhe/02-design/estrategia-de-testes.md", "sections": [
+          {"selector": {"start": null, "end_before": "Acentos e raster"}, "phase": "initial"},
+          {"selector": {"start": "Acentos e raster", "end_before": "aceita a via sem acentos"}, "phase": "deferred"},
+          {"selector": {"start": "aceita a via sem acentos", "end_before": "Não foi identificado, na investigação,"}, "phase": "initial"},
+          {"selector": {"start": "Não foi identificado, na investigação,", "end_before": "Build/watch sobre código"}, "phase": "deferred"},
+          {"selector": {"start": "Build/watch sobre código", "end_before": "##### Complemento factual — correção compatível do parser (27/10/2026, M01-T31)"}, "phase": "initial"},
+          {"selector": {"start": "##### Complemento factual — correção compatível do parser (27/10/2026, M01-T31)", "end_before": "não se usa mais a aceitação anterior"}, "phase": "deferred"},
+          {"selector": {"start": "não se usa mais a aceitação anterior", "end_before": "- Duas instalações finais por lock"}, "phase": "initial"},
+          {"selector": {"start": "- Duas instalações finais por lock", "end_before": "## 11. Aceitação com usuários"}, "phase": "deferred"},
+          {"selector": {"start": "## 11. Aceitação com usuários", "end_before": null}, "phase": "initial"}
+        ]},
+        {"path": "docs_sistema_recolhe/how-to/fluxo-de-desenvolvimento.md", "sections": [
+          {"selector": {"start": null, "end_before": "Seleção validada em"}, "phase": "initial"},
+          {"selector": {"start": "Seleção validada em", "end_before": "`src/.node-version` indica"}, "phase": "deferred"},
+          {"selector": {"start": "`src/.node-version` indica", "end_before": "não foi necessário instalar um gerenciador"}, "phase": "initial"},
+          {"selector": {"start": "não foi necessário instalar um gerenciador", "end_before": "Para reproduzir a instalação pelos locks"}, "phase": "deferred"},
+          {"selector": {"start": "Para reproduzir a instalação pelos locks", "end_before": "No ensaio T34,"}, "phase": "initial"},
+          {"selector": {"start": "No ensaio T34,", "end_before": "Outras plataformas/arquiteturas"}, "phase": "deferred"},
+          {"selector": {"start": "Outras plataformas/arquiteturas", "end_before": null}, "phase": "initial"}
+        ]},
+        {"path": "docs_sistema_recolhe/reference/impressao-termica.md", "sections": [
+          {"selector": {"start": null, "end_before": "> **Decisão vigente:**"}, "phase": "deferred"},
+          {"selector": {"start": "> **Decisão vigente:**", "end_before": "## 1. Equipamento recebido"}, "phase": "initial"},
+          {"selector": {"start": "## 1. Equipamento recebido", "end_before": "## 3. Limitações aceitas pelo responsável"}, "phase": "deferred"},
+          {"selector": {"start": "## 3. Limitações aceitas pelo responsável", "end_before": " validado "}, "phase": "initial"},
+          {"selector": {"start": " validado ", "end_before": " e homologar os dois conteúdos reais."}, "phase": "deferred"},
+          {"selector": {"start": " e homologar os dois conteúdos reais.", "end_before": "A v5"}, "phase": "initial"},
+          {"selector": {"start": "A v5", "end_before": "QR Pix, chave e link de contato"}, "phase": "deferred"},
+          {"selector": {"start": "QR Pix, chave e link de contato", "end_before": "A permissão"}, "phase": "initial"},
+          {"selector": {"start": "A permissão", "end_before": "pode ser revogada e precisa"}, "phase": "deferred"},
+          {"selector": {"start": "pode ser revogada e precisa", "end_before": " (3 s "}, "phase": "initial"},
+          {"selector": {"start": " (3 s ", "end_before": ". Vincular a ação a identificador efêmero"}, "phase": "deferred"},
+          {"selector": {"start": ". Vincular a ação a identificador efêmero", "end_before": null}, "phase": "initial"}
+        ]},
+        {"path": "docs_sistema_recolhe/02-design/adr/0009-impressao-escpos-web-serial.md", "sections": [
+          {"selector": {"start": null, "end_before": "## Contexto"}, "phase": "initial"},
+          {"selector": {"start": "## Contexto", "end_before": "RN10f exige OS salva"}, "phase": "deferred"},
+          {"selector": {"start": "RN10f exige OS salva", "end_before": "- Positivo: elimina aplicativo"}, "phase": "initial"},
+          {"selector": {"start": "- Positivo: elimina aplicativo", "end_before": "- Positivo: mantém separação"}, "phase": "deferred"},
+          {"selector": {"start": "- Positivo: mantém separação", "end_before": "- Positivo: conexão por trabalho"}, "phase": "initial"},
+          {"selector": {"start": "- Positivo: conexão por trabalho", "end_before": "- Negativo: API tem disponibilidade"}, "phase": "deferred"},
+          {"selector": {"start": "- Negativo: API tem disponibilidade", "end_before": "- Limite: QR genérico aprovado"}, "phase": "initial"},
+          {"selector": {"start": "- Limite: QR genérico aprovado", "end_before": null}, "phase": "deferred"}
+        ]},
+        {"path": "docs_sistema_recolhe/02-design/arquitetura-hld.md", "sections": [
+          {"selector": {"start": null, "end_before": "### Decisões estruturantes"}, "phase": "initial"},
+          {"selector": {"start": "### Decisões estruturantes", "end_before": "## 4. Componentes e responsabilidades"}, "phase": "deferred"},
+          {"selector": {"start": "## 4. Componentes e responsabilidades", "end_before": "A comunicação, persistência da autorização,"}, "phase": "initial"},
+          {"selector": {"start": "A comunicação, persistência da autorização,", "end_before": "O documento segue a ordem fechada"}, "phase": "deferred"},
+          {"selector": {"start": "O documento segue a ordem fechada", "end_before": null}, "phase": "initial"}
+        ]},
+        {"path": "docs_sistema_recolhe/01-requisitos/escopo.md", "sections": [
+          {"selector": {"start": null, "end_before": ", com comunicação"}, "phase": "initial"},
+          {"selector": {"start": ", com comunicação", "end_before": "Integração da via da Recolhe"}, "phase": "deferred"},
+          {"selector": {"start": "Integração da via da Recolhe", "end_before": "Comunicação direta"}, "phase": "initial"},
+          {"selector": {"start": "Comunicação direta", "end_before": "detectar API e contexto seguro"}, "phase": "deferred"},
+          {"selector": {"start": "detectar API e contexto seguro", "end_before": "rawBT"}, "phase": "initial"},
+          {"selector": {"start": "rawBT", "end_before": "Aceitos texto térmico"}, "phase": "deferred"},
+          {"selector": {"start": "Aceitos texto térmico", "end_before": null}, "phase": "initial"}
+        ]},
+        {"path": "docs_sistema_recolhe/01-requisitos/backlog.md", "sections": [{"selector": {"start": null, "end_before": null}, "phase": "initial"}]},
+        {"path": "docs_sistema_recolhe/01-requisitos/regras-de-negocio.md", "sections": [{"selector": {"start": null, "end_before": null}, "phase": "initial"}]},
+        {"path": "docs_sistema_recolhe/01-requisitos/casos-de-uso/uc01-cadastrar-os.md", "sections": [{"selector": {"start": null, "end_before": null}, "phase": "initial"}]},
+        {"path": "docs_sistema_recolhe/02-design/modelo-de-dados.md", "sections": [{"selector": {"start": null, "end_before": null}, "phase": "initial"}]},
+        {"path": "docs_sistema_recolhe/02-design/adr/0001-monolito-laravel-inertia-react.md", "sections": [{"selector": {"start": null, "end_before": null}, "phase": "initial"}]},
+        {"path": "docs_sistema_recolhe/02-design/adr/0002-sqlite-como-banco-inicial.md", "sections": [{"selector": {"start": null, "end_before": null}, "phase": "initial"}]},
+        {"path": "docs_sistema_recolhe/02-design/adr/0006-autenticacao-por-navegador-e-inatividade.md", "sections": [{"selector": {"start": null, "end_before": null}, "phase": "initial"}]},
+        {"path": "docs_sistema_recolhe/02-design/ui-ux/prototipo-baixa-fidelidade.md", "sections": [{"selector": {"start": null, "end_before": null}, "phase": "initial"}]},
+        {"path": "docs_sistema_recolhe/reference/convencoes-de-desenvolvimento.md", "sections": [{"selector": {"start": null, "end_before": null}, "phase": "initial"}]},
+        {"path": "docs_sistema_recolhe/how-to/demonstracao-local.md", "sections": [{"selector": {"start": null, "end_before": null}, "phase": "initial"}]},
+        {"path": "src/.node-version", "sections": [{"selector": {"start": null, "end_before": null}, "phase": "initial"}]}
+      ]
+    }
+  }
+}
