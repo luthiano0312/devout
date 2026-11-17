@@ -3,7 +3,7 @@
 **Data de consolidação:** 16/11/2026  
 **Status:** prova de comunicação e controle via RPC concluída; construção do orquestrador **ainda não iniciada**.  
 **Papel deste arquivo:** fonte de projeto com fatos verificados, decisões aprovadas nesta conversa, limitações e implicações para o MVP.  
-**Referência anterior:** `contexto-projeto-automacao-workflow-atualizado.md` (consolidação conceitual de 12/11/2026). Este documento o **complementa**, não o substitui. As decisões prévias sobre workflow, Git, papéis e aprovações permanecem válidas salvo mudanças explícitas aqui registradas.
+**Referência anterior:** [contexto consolidado](../explanation/contexto-projeto-automacao-workflow-atualizado.md) (consolidação conceitual de 12/11/2026). Este documento o **complementa**, não o substitui. As decisões prévias sobre workflow, Git, papéis e aprovações permanecem válidas salvo mudanças explícitas aqui registradas.
 
 ## 1. Objetivo e alcance da prova
 
@@ -202,8 +202,8 @@ Automatizar várias tasks sequenciais de um marco, homologação do marco e feed
 
 ## 11. Referências
 
-- Fonte conceitual do projeto: `contexto-projeto-automacao-workflow-atualizado.md`.
-- Arquivo de decisões mencionado naquela fonte: `decisoes-workflow-automacao-2026-11-12.md` (não estava disponível como arquivo independente nesta prova; confirmar acesso antes de auditoria fina).
+- Fonte conceitual do projeto: [contexto consolidado](../explanation/contexto-projeto-automacao-workflow-atualizado.md).
+- Arquivo de decisões mencionado naquela fonte: [decisões de workflow](../explanation/decisoes-workflow-automacao-2026-11-12.md) (não estava disponível como arquivo independente nesta prova; confirmar acesso antes de auditoria fina).
 - Repositório das skills: <https://github.com/luthiano0312/my-skills>.
 - Documentação do Pi RPC: <https://docs.pi.dev/latest/rpc>.
 - Extensão `pi-file-permissions`: <https://github.com/ross-jill-ws/pi-file-permissions>.

@@ -11,9 +11,9 @@
 
 **Fontes a preservar:**
 
-1. `contexto-projeto-automacao-workflow-atualizado.md` — desenho e decisões conceituais do workflow.
-2. `01-registro-integracao-openclaw-pi-e-decisoes.md` — evidências da prova RPC e decisões de integração, incluindo E14.
-3. `02-inicio-proxima-conversa-mvp-orquestrador(1).md` — briefing/escopo da Etapa A.
+1. [Contexto consolidado](../explanation/contexto-projeto-automacao-workflow-atualizado.md) — desenho e decisões conceituais do workflow.
+2. [Registro da integração](../reference/01-registro-integracao-openclaw-pi-e-decisoes.md) — evidências da prova RPC e decisões de integração, incluindo E14.
+3. [Briefing da Etapa A](../explanation/archive/02-inicio-proxima-conversa-mvp-orquestrador.md) — fonte histórica do briefing/escopo, anterior a este contrato.
 4. Repositório [`luthiano0312/my-skills`](https://github.com/luthiano0312/my-skills), especialmente `.agents/skills/implement/` (skill, `references/revisor.md`, `references/implementador.md`, `references/corretor.md`, `scripts/review_inputs.py`, `scripts/update_registro.py`) e `.agents/skills/plan/`. Conteúdo inspecionado na branch `main` durante a especificação; **fixar SHA de commit e revalidar antes de adaptar o código**.
 5. Protocolo e documentação do Pi RPC: https://docs.pi.dev/latest/rpc e documentação da versão instalada. Comportamento real do Windows e do Pi instalado será testado; não inferir de documentação `latest` que tudo já funciona na versão local.
 

@@ -3,7 +3,7 @@
 **Data de consolidação:** 2026-11-12  
 **Status:** decisões conceituais acordadas; **não implementadas** nas skills nem no orquestrador.  
 **Objetivo deste documento:** servir de contrato de intenção para uma revisão de consistência posterior. Não é especificação executável, nem prova de que as skills existentes já cumprem estas regras.  
-**Contexto geral:** [`contexto-projeto-automacao-workflow.md`](contexto-projeto-automacao-workflow.md).  
+**Contexto geral da época:** [contexto inicial](archive/contexto-projeto-automacao-workflow.md). Para leitura atual, consultar o [contexto consolidado](contexto-projeto-automacao-workflow-atualizado.md) e a precedência no [índice documental](../README.md).  
 **Repositório das skills:** <https://github.com/luthiano0312/my-skills> (`.agents/skills/`).
 
 ## 1. Objetivo e limites do projeto
@@ -60,6 +60,8 @@ A classificação é **instrumento de elaboração**, não novo campo obrigatór
 O **arquivo central é um índice** com identificações, resumos, links, ordem sugerida e dependências justificadas; não reproduz a especificação completa de cada task. `registro.md` continua como fonte de verdade dos estados, hashes e observações, não do escopo.
 
 ### Estrutura de referência aprovada conceitualmente
+
+**Exemplo conceitual, não mapa do checkout atual.** No `devout`, usar o [plano M01](../plano.md) e o [registro](../03-execucao/registro.md), conforme o [AGENTS.md](../../AGENTS.md). A migração para arquivos individuais por task não integra o Slice 1.
 
 ```text
 docs/03-execucao/
