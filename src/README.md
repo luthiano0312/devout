@@ -1,4 +1,8 @@
-# Pi Driver — M01-T01 / M01-T02
+# Pi Driver e exclusividade — M01-T01 / M01-T02 / M01-T03
+
+Aquisição global, uso com Driver, testes concorrentes e procedimento de reconciliação:
+[`PI-LOCK.md`](PI-LOCK.md). O Runner futuro deve adquirir a lease antes de lançar Pi;
+o Driver isolado e os smokes abaixo não adquirem trava implicitamente.
 
 Node.js sem dependências externas; lançamento suportado em **Windows nativo**.
 Código/testes ficam neste diretório; nenhum log operacional ou histórico é gravado pelo Driver.
@@ -15,10 +19,12 @@ npm.cmd --prefix src run test:cancel
 ```
 
 Não instala pacotes nem exige Gateway OpenClaw. Testes automatizados usam processos
-Node fictícios, sequenciais. O smoke inicia **um Pi real** em diretório temporário,
+Node fictícios; a suíte de exclusividade disputa a trava entre processos concorrentes.
+O smoke inicia **um Pi real** em diretório temporário,
 com ferramentas, MCP, extensões, skills, templates e contexto de projeto desabilitados.
 Requer Pi compatível, acesso ao provedor e nenhuma execução Pi anterior do workflow
-ativa/incerta. Não executar vários smokes em paralelo: a trava global pertence à T03.
+ativa/incerta. Não executar vários smokes em paralelo: eles chamam o Driver diretamente, sem a
+trava global da T03.
 Não trocar políticas/credenciais para contornar um bloqueio.
 
 O smoke envia apenas `get_state` e um pedido de resposta `PONG-DEVOUT-T01`.
@@ -65,7 +71,7 @@ try {
   // Após trabalho terminado: shutdown(). Se houver atividade, usar cancel().
   const ended = await driver.cancel(); // abort limitado + EOF + eventual fallback
   if (!ended.canRelease) {
-    // NÃO iniciar outro Pi nem liberar futura trava; reconciliar a incerteza.
+    // NÃO iniciar outro Pi nem liberar a trava; reconciliar a incerteza.
   }
   // canRelease comprova término, não sucesso funcional nem aprovação da task.
 }
@@ -136,7 +142,7 @@ Os códigos correspondentes incluem `INVALID_JSON`, `INVALID_RECORD`,
 `STDOUT_ERROR`, `STDERR_ERROR`, `PROCESS_EXIT`, `COMMAND_TIMEOUT`, `SETTLED_TIMEOUT`.
 Não há retry/restart automático. O consumidor deve aguardar o término gerenciado,
 diagnosticar processo que não sai e bloquear nova execução incerta.
-A trava global e sua recuperação pertencem à T03, não a este Driver.
+A trava global e sua recuperação estão em `pi-lock.mjs` (T03), não neste Driver.
 
 ### Término gerenciado e identidade (M01-T02)
 
@@ -186,7 +192,7 @@ Job vazio, root encerrado e `close` dos pipes antes de `canRelease=true`.
 Root ausente com filhos vivos, falha de acesso/Job/identidade, sobrevivente ou perda
 do observador produzem `uncertain, canRelease=false`. Não há retry de matança nem
 reset no mesmo Driver. Preservar diagnóstico/workspace e reconciliar manualmente;
-o consumidor **não pode liberar a futura trava/iniciar nova execução** nesse caso.
+o consumidor **não pode liberar a trava/iniciar nova execução** nesse caso.
 Falha de bootstrap impede liberação do host para lançar Pi. Nenhuma garantia de
 sandbox/isolamento forte é oferecida contra processos privilegiados externos,
 brokers ou manipulação hostil dos processos da conta Windows.

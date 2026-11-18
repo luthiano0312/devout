@@ -15,7 +15,7 @@
 - **Procedimentos:** `docs_devout/how-to/`; diagnóstico em `docs_devout/how-to/diagnosticar-ambiente-windows.md`.
 - **Plano do marco atual:** `docs_devout/plano.md` (M01 aprovado em 2026-11-17; confirmar commit de baseline). O plano está na raiz documental, não em `03-execucao/`.
 - **Registro oficial de execução:** `docs_devout/03-execucao/registro.md` (M01 inicializado em 2026-11-17; confirmar commit de baseline).
-- **Seleção de fontes para revisão independente:** `docs_devout/03-execucao/fontes-revisao.json` (configuração v1, com seleções para M01-T01 e M01-T02).
+- **Seleção de fontes para revisão independente:** `docs_devout/03-execucao/fontes-revisao.json` (configuração v1, com seleções para M01-T01, M01-T02 e M01-T03).
 - **Relatórios e revisões de tasks:** `docs_devout/03-execucao/achados/` (quando houver).
 - **Planos encerrados:** `docs_devout/03-execucao/planos/` (quando houver).
 
@@ -33,13 +33,13 @@ O contrato define o comportamento do MVP; o plano limita a execução atual ao S
 
 Fora da avaliação independente, carregar primeiro a task atual em `docs_devout/plano.md` e apenas as fontes pertinentes. Na avaliação independente, preparar primeiro a entrada filtrada conforme abaixo, sem abrir o plano inteiro. Consultar os ADRs antes de propor mudanças arquiteturais relevantes. Por padrão, ler somente `docs_devout/02-design/adr/*.md` (ativos), sem busca recursiva; `docs_devout/02-design/adr/archive/` (quando houver) fica reservado à investigação histórica ou revisão arquitetural ampla. Não carregar `docs_devout/explanation/archive/` em massa; rascunhos e briefings não substituem o contrato aprovado.
 
-Para revisar M01-T01 ou M01-T02, executar antes de relatos, Observações, diffs irrestritos ou documentos mistos (exemplo M01-T02; para M01-T01, trocar somente o ID):
+Para revisar M01-T01, M01-T02 ou M01-T03, executar antes de relatos, Observações, diffs irrestritos ou documentos mistos (exemplo M01-T03; para as outras seleções autorizadas, trocar somente o ID):
 
 ```powershell
-python .agents/skills/implement/scripts/review_inputs.py docs_devout/03-execucao/registro.md M01-T02 --sources docs_devout/03-execucao/fontes-revisao.json
+python .agents/skills/implement/scripts/review_inputs.py docs_devout/03-execucao/registro.md M01-T03 --sources docs_devout/03-execucao/fontes-revisao.json
 ```
 
-Persistir a saída em arquivo temporário **fora do repositório**, conforme `.agents/skills/implement/references/entradas-independentes.md`; não versionar esse JSON gerado. A configuração fornece task completa, restrições e fontes iniciais, adiando evidências anteriores, trechos mistos e experimentos históricos. Persistir a avaliação inicial antes de consultar `deferred_sections`, relatos e todos os diffs adiados; o filtro não reduz a revisão final. Revalidar a entrada com o mesmo comando e `--check-input <entrada-temporaria.json>`. Não há seleção autorizada para outras tasks neste JSON: sem seleção válida, pedir o recorte, sem fallback integral. Na M01-T02, o guia `src/README.md` fica integralmente adiado para não antecipar o desenho/relato da implementação; seu exame completo continua obrigatório na fase de confronto. Os quatro campos das M01-T01 e M01-T02 são subtítulos Markdown para compatibilidade com o preparador, sem mudança dos requisitos.
+Persistir a saída em arquivo temporário **fora do repositório**, conforme `.agents/skills/implement/references/entradas-independentes.md`; não versionar esse JSON gerado. A configuração fornece task completa, restrições e fontes iniciais, adiando evidências anteriores, trechos mistos e experimentos históricos. Persistir a avaliação inicial antes de consultar `deferred_sections`, relatos e todos os diffs adiados; o filtro não reduz a revisão final. Revalidar a entrada com o mesmo comando e `--check-input <entrada-temporaria.json>`. Não há seleção autorizada para outras tasks neste JSON: sem seleção válida, pedir o recorte, sem fallback integral. Nas M01-T02 e M01-T03, o guia `src/README.md` fica integralmente adiado para não antecipar o desenho/relato da implementação; na M01-T03, isso também vale para `src/PI-LOCK.md`. Seu exame completo continua obrigatório na fase de confronto. Os quatro campos das M01-T01, M01-T02 e M01-T03 são subtítulos Markdown para compatibilidade com o preparador, sem mudança dos requisitos.
 
 ## Convenções e limites atuais
 

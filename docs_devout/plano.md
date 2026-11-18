@@ -128,24 +128,24 @@ A ordem das tasks abaixo é a sequência recomendada. As dependências são cons
 
 ### M01-T03 — Exclusividade de Pi e recuperação conservadora de lock
 
-**Fazer**
+#### Fazer
 
 - Construir trava global mínima entre invocações independentes de Role Runner, com aquisição **atomicamente exclusiva** antes de lançar um Pi, registro de proprietário e identidade da execução/processo, e liberação somente após encerramento verificado.
 - Impedir que duas invocações simultâneas iniciem dois Pi, inclusive ao disputar a aquisição inicial. Tratar lock pré-existente, proprietário morto, PID reutilizado e estado de processo incerto sem apagar silenciosamente locks abandonados.
 - Fornecer verificação/reconciliação explícita para bloqueios; não transformar a reconciliação em retomada/reinício automático de tasks.
 - Testar concorrência com múltiplos processos Node reais (Pi falso pode ser usado), além de falha que deixa lock e execução anterior incertos.
 
-**Não alterar**
+#### Não alterar
 
 - Não iniciar dois Pi do workflow simultaneamente, mesmo se as sessões forem independentes. `[Fonte: docs_devout/reference/01-registro-integracao-openclaw-pi-e-decisoes.md#Seção 2]`
 - Não tomar arquivo de lock ou PID isolado como prova suficiente de processo vivo/morto e não remover lock incerto às cegas. `[Fonte: docs_devout/02-design/contrato-orquestracao-mvp.md#Seção 5.3]`
 
-**Entregáveis**
+#### Entregáveis
 
 - Módulo de aquisição/liberação exclusiva com metadados de propriedade e procedimento documentado para reconciliação.
 - Testes concorrentes e testes de lock incerto/abandonado.
 
-**Critério de conclusão**
+#### Critério de conclusão
 
 - Duas tentativas concorrentes produzem **no máximo uma** aquisição autorizada e nenhum segundo Pi; encerrar o processo anterior, com confirmação, permite a próxima. Lock incerto impede nova sessão até reconciliação comprovada. Cobertura do cenário **T08** do contrato.
 
