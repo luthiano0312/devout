@@ -197,24 +197,24 @@ A ordem das tasks abaixo é a sequência recomendada. As dependências são cons
 
 ### M01-T06 — Disparo e acompanhamento por OpenClaw no Windows
 
-**Fazer**
+#### Fazer
 
 - Criar e validar procedimento mínimo para OpenClaw invocar **o Role Runner** via `exec` assíncrono com `yieldMs`, acompanhar a execução por `process.poll`/`process.log` ou mecanismos **efetivamente existentes na versão local**, e conferir arquivos de `runId`/resultado antes de declarar que a execução técnica terminou.
 - Demonstrar no host de teste a cadeia real OpenClaw → Runner → Driver → Pi com prompt inofensivo, rastreando início, eventos, `agent_settled`, término e persistência. Demonstrar também solicitação de cancelamento e duplicidade de disparo sem criar outro Pi.
 - Registrar comandos/configuração mínimos para repetir o teste, limitações de execução prolongada e o comportamento observado após erro/reinício do OpenClaw Gateway **quando testável sem risco**. Se o Gateway reiniciar e deixar estado incerto, não presumir retomada durável.
 
-**Não alterar**
+#### Não alterar
 
 - Não transformar a demonstração em orquestração de revisão/correção, persistência oficial de task, Git Gateway, integração remota, checkpoints, execução de marco ou produção. `[Fonte: docs_devout/02-design/contrato-orquestracao-mvp.md#Seções 1 e 11]`
 - Não tratar retorno de `exec`, `prompt accepted`, `exitCode=0` ou mensagem do Pi como comprovação de aprovação de task. `[Fonte: docs_devout/02-design/contrato-orquestracao-mvp.md#Seções 2, 4 e 6]`
 - Não expor portas de teste, credenciais ou dados reais. `[Fonte: docs_devout/reference/01-registro-integracao-openclaw-pi-e-decisoes.md#Seções 4 e 6]`
 
-**Entregáveis**
+#### Entregáveis
 
 - Procedimento/script de disparo e acompanhamento com OpenClaw na instalação real, documentação dos comandos, entradas, evidências e limitações.
 - Evidências sanitizadas da cadeia real, da exclusividade, do cancelamento e de falhas tratadas sem falso sucesso.
 
-**Critério de conclusão**
+#### Critério de conclusão
 
 - Uma invocação iniciada pelo OpenClaw executa e acompanha o Runner real até o resultado persistido, com mesmo `runId` rastreável e `agent_settled` observado quando aplicável. Repetir o disparo enquanto há um Pi ativo **não** gera segundo Pi. Cancelamento não deixa sessão seguinte começar antes de encerrar/verificar a anterior. A integração atende ao Slice 1 **sem** implementar os testes completos T01/T02 de workflow de papéis, que pertencem aos slices seguintes.
 

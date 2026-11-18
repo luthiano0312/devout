@@ -12,8 +12,8 @@ O Runner termina depois de persistir o resultado e drenar sua saída.
 
 Somente `role: "test"` está autorizado neste Slice. Não representa implementador,
 revisor ou corretor de uma task real. Gates desses papéis pertencem ao Slice 2;
-cancelamento local entre invocações está descrito abaixo (M01-T05). A integração
-OpenClaw permanece na M01-T06.
+cancelamento local entre invocações está descrito abaixo (M01-T05). O procedimento
+OpenClaw da M01-T06 está em [`OPENCLAW.md`](OPENCLAW.md).
 
 ## Solicitação local (schemaVersion 1)
 

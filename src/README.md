@@ -2,6 +2,8 @@
 
 CLI temporária, solicitação local e evidências por execução: [`ROLE-RUNNER.md`](ROLE-RUNNER.md)
 (M01-T04/T05; somente papel de teste, com cancelamento entre invocações). O Runner adquire a lease antes de lançar Pi.
+Disparo/acompanhamento pelo Gateway real no Windows, incluindo duplicidade, cancelamento,
+falhas e limites de restart: [`OPENCLAW.md`](OPENCLAW.md) (M01-T06, opt-in separado).
 Aquisição global, uso com Driver, testes concorrentes e procedimento de reconciliação:
 [`PI-LOCK.md`](PI-LOCK.md). O Driver isolado e os smokes T01/T02 abaixo não adquirem
 trava implicitamente.
