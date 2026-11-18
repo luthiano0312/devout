@@ -1,7 +1,7 @@
 # Infraestrutura Slice 1 — Pi Driver, exclusividade e Role Runner
 
 CLI temporária, solicitação local e evidências por execução: [`ROLE-RUNNER.md`](ROLE-RUNNER.md)
-(M01-T04; somente papel de teste). O Runner adquire a lease antes de lançar Pi.
+(M01-T04/T05; somente papel de teste, com cancelamento entre invocações). O Runner adquire a lease antes de lançar Pi.
 Aquisição global, uso com Driver, testes concorrentes e procedimento de reconciliação:
 [`PI-LOCK.md`](PI-LOCK.md). O Driver isolado e os smokes T01/T02 abaixo não adquirem
 trava implicitamente.
@@ -20,6 +20,8 @@ npm.cmd --prefix src run test:smoke
 npm.cmd --prefix src run test:cancel
 # CLI Role Runner com Pi real e trava global (opt-in; executar separadamente):
 npm.cmd --prefix src run test:runner
+# Runner assíncrono + controle de cancelamento em outra invocação (Pi real):
+npm.cmd --prefix src run test:runner-cancel
 ```
 
 Não instala pacotes nem exige Gateway OpenClaw. Testes automatizados usam processos
@@ -30,7 +32,9 @@ O smoke T01 inicia **um Pi real** em diretório temporário,
 com ferramentas, MCP, extensões, skills, templates e contexto de projeto desabilitados.
 Requer Pi compatível, acesso ao provedor e nenhuma execução Pi anterior do workflow
 ativa/incerta. Não executar testes/smokes em paralelo. Os smokes T01/T02 chamam o
-Driver diretamente, sem a trava global da T03; `test:runner` adquire essa trava.
+Driver diretamente, sem a trava global da T03; `test:runner` e `test:runner-cancel`
+adquirem essa trava. O último testa cancelamento durante texto em streaming e
+junto ao encerramento, preservando evidências sanitizadas fora do Git.
 Não trocar políticas/credenciais para contornar um bloqueio.
 
 O smoke envia apenas `get_state` e um pedido de resposta `PONG-DEVOUT-T01`.

@@ -175,23 +175,23 @@ A ordem das tasks abaixo é a sequência recomendada. As dependências são cons
 
 ### M01-T05 — Solicitação de cancelamento de Role Runner assíncrono
 
-**Fazer**
+#### Fazer
 
 - Permitir que o controlador peça o cancelamento de um Runner **enquanto sua execução estiver em curso**, sem serviço residente ou porta de rede. Escolher e documentar um mecanismo local mínimo compatível com o contrato (por exemplo, sinalização controlada em arquivo operacional), verificando identidade do `runId` e evitando alterações concorrentes.
 - Ao receber cancelamento, impedir novas fases/prompts, acionar `abort` do Driver, concluir o escalonamento de término e persistir resultado de `interrupted`/falha técnica sem confundi-lo com conclusão da task.
 - Fazer a solicitação repetida ser segura, não matar execução errada e deixar estado incerto bloqueante. Testar cancelamento durante uma resposta em curso e imediatamente antes do encerramento, inclusive em Pi real quando viável.
 
-**Não alterar**
+#### Não alterar
 
 - Não criar serviço residente, HTTP local, IPC genérico ou segundo processo Pi para executar o cancelamento. `[Fonte: docs_devout/02-design/contrato-orquestracao-mvp.md#Seções 2 e 5.2]`
 - Não prosseguir ou liberar lock enquanto processo antigo ou seu encerramento permanecer incerto. `[Fonte: docs_devout/02-design/contrato-orquestracao-mvp.md#Seções 5.2–5.3]`
 
-**Entregáveis**
+#### Entregáveis
 
 - Interface controlada para pedir cancelamento de `runId` ativo e tratamento no Runner, com eventos/resultado.
 - Testes de cancelamento efetivo, repetição, corrida e identificação correta do alvo.
 
-**Critério de conclusão**
+#### Critério de conclusão
 
 - Um Runner ativo recebe cancelamento de outra invocação de controle, encerra o Pi identificado e registra interrupção sem falso `completed`; uma solicitação tardia/repetida não encerra processo alheio, e execução incerta bloqueia novos lançamentos. Complementa o cenário **T07**.
 

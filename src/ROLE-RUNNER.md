@@ -1,4 +1,4 @@
-# Role Runner temporário — M01-T04 / Slice 1
+# Role Runner temporário — M01-T04/T05 / Slice 1
 
 ```powershell
 node src/role-runner.mjs run --config "C:\caminho-local\request.json"
@@ -12,7 +12,8 @@ O Runner termina depois de persistir o resultado e drenar sua saída.
 
 Somente `role: "test"` está autorizado neste Slice. Não representa implementador,
 revisor ou corretor de uma task real. Gates desses papéis pertencem ao Slice 2;
-controle de cancelamento entre invocações pertence à M01-T05 e OpenClaw à M01-T06.
+cancelamento local entre invocações está descrito abaixo (M01-T05). A integração
+OpenClaw permanece na M01-T06.
 
 ## Solicitação local (schemaVersion 1)
 
@@ -111,6 +112,8 @@ node src/role-runner.mjs run --config $config
     events.jsonl       # sequência de resumos JSONL, sem payload bruto
     state.json         # último estado operacional conhecido, substituição atômica
     result.json        # resultado final técnico, publicação atômica
+    control.json       # mailbox fechado de cancelamento, substituição atômica
+    control.guard/     # presente somente durante uma transação curta de controle
 ```
 
 `runId = run-<UUID>` é gerado internamente, distinto de `taskId`, ID de sessão Pi,
@@ -121,7 +124,10 @@ skill durante o desenvolvimento deste código não é uma operação desse execu
 **stdout:** os mesmos eventos JSONL persistidos (`runId`, `seq` crescente, instante
 ISO, `type` e detalhes fechados), seguidos por um resumo final `type: "result"`.
 Estados: `starting` → `running` → `stopping` → `terminated` ou `uncertain`.
-Há resumos de aquisição, comunicação, settlement e falha. Só tipos conhecidos
+Há resumos de aquisição, comunicação, settlement e falha. `response_started` marca
+somente o primeiro `message_update` com `text_delta`, sem texto nem payload;
+`cancel_observed` registra consumo do pedido e `control_closed` o corte final.
+Só tipos conhecidos
 `agent_start`/`agent_settled` são resumidos, até o limite de 512 eventos Pi observados;
 o total de eventos e bytes de diagnóstico continua contado. `stderr` da CLI contém
 somente código fechado para falhas de invocação/publicação. stderr bruto do Pi,
@@ -135,7 +141,8 @@ nem prova atual de vida. Após falha de I/O pode estar atrasado; não inferir su
 **result.json:** identidade da execução, instantes inicial/final, `state`,
 `technicalOutcome` (`succeeded`, `failed`, `interrupted`), `taskApproved: false`,
 `observed` (comunicação, modelo disponível, aceitação, settlement, abort, erro do
-assistente, marcador e contadores), `errorCodes`, `lock.acquired/released` e
+assistente, marcador, `responseStarted` e contadores), `cancellation.requested`,
+`errorCodes`, `lock.acquired/released` e
 `termination`. Este último contém estado, prova de árvore vazia, `canRelease`,
 `workCompleted`, cancelamento/abort, força, exit codes, motivo/falha sanitizados,
 identidade e PIDs/criações observados (sem imagens/linhas de comando).
@@ -179,17 +186,98 @@ conclusão, não sucesso. Mesmo `result.json` deve ser confrontado com a lease/p
 e término do Runner pelo controlador. Não limpar workspace/evidências enquanto
 processo/lock estiver incerto; não há limpeza, reconciliação ou restart automático.
 
+## Cancelamento entre invocações (M01-T05)
+
+Em outra invocação do controlador, enquanto o Runner estiver ativo:
+
+```powershell
+node src/role-runner.mjs cancel --artifacts-root "C:\caminho-local\runner-artifacts" --run-id "run-UUID-obtido-do-Runner"
+```
+
+Usar o `runId` completo gerado pelo Runner e a mesma raiz de artefatos (não o
+`taskId`, PID ou ID de `exec`). A CLI aceita exatamente os argumentos acima, nessa
+ordem. API local equivalente: `requestCancellation({artifactsRoot, runId})` em
+`run-control.mjs`. Não aceita shell, caminho de run arbitrário, sinal de SO ou RPC.
+O controlador **não** abre Pi nem mata por PID: só altera o mailbox daquele run.
+IDs inválidos, diretórios ausentes, links/junctions em `runs`/run, identidade
+incompatível ou mailbox inválido falham sem selecionar outra execução.
+
+`control.json` tem esquema fechado: `schemaVersion:1`, `runId`, `runnerPid`,
+`status` (`open`, `requested`, `closed`), `requestedAt` (ISO UTC ou null) e
+`finalState` (null até fechar; depois `terminated` ou `uncertain`). O PID é
+metadado conferido pelo Runner, **nunca** autorização para matar um processo.
+A identidade do alvo é o diretório novo, não reutilizado, com UUID v4 e `runId`
+interno correspondente. Não editar, copiar, reutilizar ou remover esses arquivos.
+
+A exclusão por `mkdir(control.guard)` serializa leitores/escritores do controle,
+o início de cada fase (aquisição, lançamento, consulta e prompt) e o corte final.
+A seção crítica é síncrona e curta; libera a guarda antes de aguardar Pi/I/O
+assíncrono. Escrita usa o mesmo flush + rename de `state`/`result`. Contenção tenta
+novamente a cada 25 ms, por até 2 s; erro/guarda abandonada falham fechados, sem
+reivindicação automática. Arquivos operacionais são confiáveis/restritos à conta;
+isso não é autenticação nem isolamento contra outro processo hostil da mesma conta.
+
+O Runner verifica o controle antes de cada fase e a cada 100 ms durante esperas.
+Pedido consumido impede fases/prompts seguintes e chama `Driver.cancel()` (abort,
+EOF e eventual força da T02), sem retry de Pi. Uma fase cujo início já venceu a
+arbitragem pode estar em bootstrap: aguarda vincular o Driver, cancela-o e não
+inicia a fase seguinte. Os prazos de bootstrap/Driver continuam valendo; 100 ms
+não é promessa de término em 100 ms. Erro de controle também impede fases e
+provoca término conservador. A guarda de controle não substitui a trava global.
+
+**Recibo stdout** `type:cancel_request` com `runId` e `status`:
+
+- `requested`: pedido persistido; não prova recebimento, abort ou morte.
+- `already_requested`: repetição do mesmo pedido, sem alterar identidade/instante.
+- `too_late`: o corte final já ocorreu; não altera controle nem resultado.
+- `blocked`: controle fechado com processo/liberação incertos; exige reconciliação.
+
+CLI de controle sai com `0` para os três primeiros recibos, `1` para `blocked`,
+I/O, `CONTROL_INVALID` ou `CONTROL_BUSY`, e `2` para alvo/argumentos inválidos.
+Não interpretar exit 0 do comando de controle como cancelamento concluído.
+Se o Runner morreu antes de consumir o pedido, o recibo pode continuar sendo
+`requested`/`already_requested`: sem resultado e prova de término, não avançar.
+
+Após terminar o Pi e obter a prova/liberação (ou sua falha), o Runner fecha o
+controle **sob a mesma guarda**, consumindo qualquer pedido vencedor antes de
+publicar o resultado. Pedido aceito até esse corte domina uma resposta já correta:
+resultado `interrupted`, `cancellation.requested:true`, `taskApproved:false`, nunca
+`completed`/aprovação. O cancelamento pode chegar quando o Driver já encerra
+normalmente; nesse caso não reabre stdin nem cria outro escalonamento, mas a
+interrupção técnica ainda prevalece. Após o corte é explicitamente `too_late`.
+`closed` pode anteceder `result.json`: não é conclusão nem prova de sucesso.
+Falhas de publicação deixam resultado ausente/falho, nunca aprovação implícita.
+
+Só o Driver/lease pode provar término e liberar a exclusividade. Resultado
+`uncertain` continua bloqueante mesmo após cancelamento repetido; `cancel` não
+reconcilia nem remove lock. Não apagar uma guarda abandonada nem trocar a raiz
+para contornar bloqueio; preservar evidências e investigar o dono antes de recuperar.
+
 ## Testes
 
 ```powershell
 npm.cmd --prefix src test             # Pi falso; inclui chamadas CLI no Windows
 npm.cmd --prefix src run test:runner  # opt-in, Pi/provedor real; separado da suíte
+npm.cmd --prefix src run test:runner-cancel # opt-in, cancelamento real assíncrono
 ```
 
 A suíte cobre esquema, workspace, links, limites, ordenação, estados, erros,
 publicação atômica (incluindo leitores independentes e falhas), canários em payloads
 que não podem entrar nos logs, incerteza e CLI com Pi falso (normal, RPC error,
 EOF, crash, timeout, erro de assistente, abort e resposta divergente).
+T05 acrescenta controladores simultâneos, identidade/traversal/link, guarda
+abandonada, pedidos antes de fases e no bootstrap, ambos os lados do corte final,
+lease incerta bloqueando outro lançamento e CLI ativa com streaming/força reais
+sobre processos fictícios Windows. O smoke T05 usa Pi real com pedido em streaming
+(após primeiro texto) e junto ao encerramento, ambos pela API local no controlador
+independente já carregado, evitando a latência de bootstrap de outro Node. A CLI
+independente continua exercitada nas repetições tardias e na suíte determinística.
+Streaming só passa se pedido persistido e `cancel_observed` precederem settlement,
+com evidência de interrupção no assistente e término sem força; abort aceito sozinho,
+conclusão anterior ou ordem inconclusiva falham, nunca viram `pass:true`. A regressão
+de resposta rápida seguida de pedido atrasado exige essa rejeição. O smoke confere
+processo alheio vivo, CIM e reaquisição e preserva resumo com cronologia sanitizada
+em `%TEMP%\devout-runner-cancel-smoke-*`.
 Os testes CLI usam a **mesma raiz global padrão**, exigem que esteja livre e
 comprovam nova aquisição após término. Não rodar suíte/smokes em paralelo.
 

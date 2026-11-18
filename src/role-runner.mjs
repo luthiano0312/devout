@@ -2,12 +2,15 @@
 // Slice 1: a single disposable test role, not the official task workflow.
 import { randomUUID } from 'node:crypto';
 import { closeSync, existsSync, fsyncSync, lstatSync, mkdirSync, openSync,
-  readFileSync, readdirSync, realpathSync, renameSync, statSync, writeFileSync } from 'node:fs';
+  readFileSync, readdirSync, realpathSync, statSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { dirname, isAbsolute, join, relative, resolve, sep } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import { acquirePiLock } from './pi-lock.mjs';
 import { windowsLaunchSpec } from './pi-driver.mjs';
+import { atomicWriteJson } from './operational-json.mjs';
+import { controlTransaction, initializeControl, requestCancellation } from './run-control.mjs';
+export { atomicWriteJson } from './operational-json.mjs';
 
 const repository = realpathSync(fileURLToPath(new URL('..', import.meta.url)));
 const requestLimit = 256 * 1024;
@@ -19,6 +22,7 @@ const driverKeys = [...timerKeys, 'maxRecordBytes', 'maxQueuedBytes', 'maxPendin
 const codes = new Set([
   'INVALID_REQUEST', 'PERSISTENCE_FAILED', 'MODEL_OR_STATE_INVALID', 'ASSISTANT_ERROR',
   'SETTLEMENT_ABORTED', 'RESPONSE_MISMATCH', 'TERMINATION_FAILED', 'RUNNER_FAILED',
+  'CONTROL_INVALID', 'CONTROL_IO_FAILED', 'CONTROL_BUSY',
   'LOCK_BUSY', 'LOCK_RECONCILIATION_REQUIRED', 'LOCK_METADATA_INVALID', 'LOCK_READ_FAILED',
   'LOCK_OBSERVATION_FAILED', 'LOCK_OWNER_CHANGED', 'LOCK_PROCESS_UNCERTAIN',
   'LOCK_PROCESS_IDENTITY_MISSING', 'LOCK_LEASE_CLOSED', 'LOCK_OPERATION_PENDING',
@@ -126,24 +130,6 @@ export function loadRequest(path) {
   catch { fail('INVALID_REQUEST'); }
 }
 
-/** Flush + atomic rename on the same volume. Preserve temporaries on failure. */
-export function atomicWriteJson(path, value) {
-  const data = JSON.stringify(value) + '\n';
-  const temporary = join(dirname(path), `.write-${randomUUID()}.tmp`);
-  const fd = openSync(temporary, 'wx', 0o600);
-  try { writeFileSync(fd, data); fsyncSync(fd); } finally { closeSync(fd); }
-  const backoff = [10, 20, 40, 80, 100];
-  for (let attempt = 0; ; attempt++) {
-    try { renameSync(temporary, path); return; }
-    catch (error) {
-      // Windows readers/AV can briefly deny replacement. Retry the SAME durable
-      // candidate for at most 250 ms; never unlink the old, valid destination.
-      if (process.platform !== 'win32' || !['EPERM', 'EACCES', 'EBUSY'].includes(error.code) || attempt >= backoff.length) throw error;
-      Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, backoff[attempt]);
-    }
-  }
-}
-
 /** acquire/notify are trusted test seams, never accepted from a request/CLI. */
 export async function runRole(input, { acquire = acquirePiLock, notify = () => {} } = {}) {
   const config = validateRequest(input);
@@ -160,10 +146,11 @@ export async function runRole(input, { acquire = acquirePiLock, notify = () => {
   } catch { fail('PERSISTENCE_FAILED'); }
   const errors = new Set();
   const observed = { stateCorrelated: false, modelAvailable: false, promptAccepted: false,
-    settled: false, aborted: false, assistantError: false, markerMatched: false,
+    settled: false, aborted: false, assistantError: false, markerMatched: false, responseStarted: false,
     eventCount: 0, diagnosticBytes: 0 };
   let lease, driver, termination = null, released = false, launchAttempted = false;
   let state = 'starting', sequence = 0, journalFailed = false, textSeen = '', finalMessageSeen = false;
+  let cancelRequested = false, controlReady = false, watcher, polling = null;
   const startedAt = new Date().toISOString();
   const base = () => ({ schemaVersion: 1, runId, taskId: config.taskId, role: 'test', runnerPid: process.pid });
   function record(type, details = {}) {
@@ -184,17 +171,47 @@ export async function runRole(input, { acquire = acquirePiLock, notify = () => {
     record('state', { state });
     if (journalFailed) fail('PERSISTENCE_FAILED');
   }
+  function observeCancellation(control) {
+    if (control.runnerPid !== process.pid) fail('CONTROL_INVALID');
+    if (control.requestedAt !== null && !cancelRequested) {
+      cancelRequested = true; errors.add('CANCELLED');
+      record('cancel_observed');
+      if (driver) void driver.cancel().catch(() => {});
+    }
+  }
+  function phase(action) {
+    return controlTransaction(runDir, runId, control => {
+      observeCancellation(control);
+      if (cancelRequested) fail('CANCELLED');
+      if (control.status !== 'open') fail('CONTROL_INVALID');
+      if (journalFailed || errors.size) fail('RUNNER_FAILED');
+      // Phase intent and the controller's request share this short transaction.
+      return action();
+    });
+  }
   try {
+    initializeControl(runDir, runId); controlReady = true;
+    watcher = setInterval(() => {
+      if (polling) return;
+      polling = controlTransaction(runDir, runId, observeCancellation).catch(error => {
+        errors.add(safeCode(error));
+        if (driver) void driver.cancel().catch(() => {});
+      }).finally(() => { polling = null; });
+    }, 100);
     transition('starting');
-    lease = await acquire({ runId });
+    lease = await phase(() => acquire({ runId }));
     record('lock_acquired');
     if (journalFailed) fail('PERSISTENCE_FAILED');
     // Revalidate immediately before launch; marker/paths are not a sandbox.
     disposableWorkspace(config.workspace);
     const { settlementTimeoutMs = 120_000, ...driverOptions } = config.driver;
-    launchAttempted = true;
-    driver = await lease.launch({ piCmd: config.piCmd, cwd: config.workspace,
-      profile: 'isolated', ...driverOptions });
+    driver = await phase(() => {
+      launchAttempted = true;
+      return lease.launch({ piCmd: config.piCmd, cwd: config.workspace,
+        profile: 'isolated', ...driverOptions });
+    });
+    // A request during asynchronous bootstrap cannot be lost before binding.
+    if (cancelRequested || errors.size) void driver.cancel().catch(() => {});
     driver.on('diagnostic', bytes => { observed.diagnosticBytes += bytes.length; });
     driver.on('failure', error => { errors.add(safeCode(error)); record('driver_failure', { code: safeCode(error) }); });
     driver.on('response', response => {
@@ -204,6 +221,11 @@ export async function runRole(input, { acquire = acquirePiLock, notify = () => {
     });
     driver.on('event', event => {
       observed.eventCount++;
+      if (!observed.responseStarted && event.type === 'message_update' &&
+          event.assistantMessageEvent?.type === 'text_delta') {
+        observed.responseStarted = true;
+        record('response_started'); // One payload-free streaming marker, not response text.
+      }
       if (event.type === 'agent_settled') {
         observed.settled = true;
         observed.aborted = event.aborted === true;
@@ -229,12 +251,12 @@ export async function runRole(input, { acquire = acquirePiLock, notify = () => {
       }
     });
     transition('running');
-    const response = await driver.getState();
+    const response = await phase(() => driver.getState());
     observed.stateCorrelated = response.success === true && response.command === 'get_state' && typeof response.id === 'string';
     observed.modelAvailable = typeof response.data?.model?.id === 'string' && response.data.model.id.length > 0;
     if (!observed.stateCorrelated || !observed.modelAvailable || response.data?.isStreaming !== false) fail('MODEL_OR_STATE_INVALID');
     record('state_observed', { modelAvailable: true });
-    const result = await driver.promptAndWait(config.prompt, { timeoutMs: settlementTimeoutMs });
+    const result = await phase(() => driver.promptAndWait(config.prompt, { timeoutMs: settlementTimeoutMs }));
     observed.promptAccepted = result.response.success === true && result.response.data?.disposition === 'started';
     observed.settled = result.settled.type === 'agent_settled';
     observed.aborted = result.settled.aborted === true;
@@ -251,6 +273,10 @@ export async function runRole(input, { acquire = acquirePiLock, notify = () => {
   } finally {
     textSeen = '';
     try { transition('stopping'); } catch { /* still terminate the owned Pi */ }
+    if (controlReady) {
+      try { await controlTransaction(runDir, runId, observeCancellation); }
+      catch (error) { errors.add(safeCode(error)); }
+    }
     if (lease) {
       try {
         const ended = await lease.finish({ cancel: errors.size > 0 });
@@ -270,12 +296,26 @@ export async function runRole(input, { acquire = acquirePiLock, notify = () => {
         (!termination?.workCompleted || termination.forced || termination.exitCode !== 0)) {
       errors.add('TERMINATION_FAILED');
     }
+    clearInterval(watcher);
+    await polling;
+    if (controlReady) {
+      try {
+        await controlTransaction(runDir, runId, (control, save) => {
+          observeCancellation(control);
+          // Linearization point: later requests are too late (or blocked), not
+          // accepted and silently lost between shutdown and result publication.
+          control.status = 'closed'; control.finalState = gone ? 'terminated' : 'uncertain'; save();
+          record('control_closed', { cancelRequested });
+        });
+      } catch (error) { errors.add(safeCode(error)); }
+    }
     try { transition(gone ? 'terminated' : 'uncertain'); } catch { /* final result must not claim success */ }
     try { closeSync(eventsFd); } catch { errors.add('PERSISTENCE_FAILED'); }
   }
   const technicalOutcome = errors.size ? (observed.aborted || errors.has('CANCELLED') ? 'interrupted' : 'failed') : 'succeeded';
   const result = { ...base(), startedAt, finishedAt: new Date().toISOString(), state, technicalOutcome,
-    taskApproved: false, observed, errorCodes: [...errors], lock: { acquired: Boolean(lease), released },
+    taskApproved: false, observed, cancellation: { requested: cancelRequested },
+    errorCodes: [...errors], lock: { acquired: Boolean(lease), released },
     termination: termination ? {
       state: termination.state, processesGone: termination.processesGone === true,
       canRelease: termination.canRelease === true, workCompleted: termination.workCompleted === true,
@@ -294,6 +334,16 @@ export async function runRole(input, { acquire = acquirePiLock, notify = () => {
 }
 
 export async function main(args = process.argv.slice(2)) {
+  if (args.length === 5 && args[0] === 'cancel' && args[1] === '--artifacts-root' && args[3] === '--run-id') {
+    try {
+      const receipt = await requestCancellation({ artifactsRoot: args[2], runId: args[4] });
+      process.stdout.write(JSON.stringify({ type: 'cancel_request', ...receipt }) + '\n');
+      return receipt.status === 'blocked' ? 1 : 0;
+    } catch (error) {
+      process.stderr.write(JSON.stringify({ type: 'cancel_error', code: safeCode(error) }) + '\n');
+      return error.code === 'INVALID_REQUEST' ? 2 : 1;
+    }
+  }
   // No shell forwarding, arbitrary flags, injected factories or RPC commands.
   if (args.length !== 3 || args[0] !== 'run' || args[1] !== '--config' || !args[2]) {
     process.stderr.write('{"type":"request_rejected","code":"INVALID_REQUEST"}\n');
