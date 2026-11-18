@@ -151,25 +151,25 @@ A ordem das tasks abaixo é a sequência recomendada. As dependências são cons
 
 ### M01-T04 — Role Runner temporário e persistência por execução
 
-**Fazer**
+#### Fazer
 
 - Implementar a interface de execução temporária `node role-runner.mjs run --config "<caminho-local>"`, tomando o exemplo do contrato como **ilustrativo**, não como esquema final. Validar sintaxe e campos permitidos da solicitação, workspace descartável, papel de teste autorizado, perfil de modelo e parâmetros que controlam o Driver; caminhos e prompts são entradas locais controladas, nunca fragmentos de comando de shell.
 - Gerar `runId` único, distinto de `taskId`, `sessionId` Pi e ID do processo `exec`. Adquirir o lock antes de abrir o Pi, emitir eventos resumidos para acompanhamento e persistir `runs/<runId>/events.jsonl` e `runs/<runId>/result.json` por gravação segura/atômica quando aplicável.
 - Persistir estado mínimo do **processo/execução** (`starting`, `running`, `stopping`, `terminated`, `uncertain`) e resultado técnico observável, separando fim de transporte de aprovação de entrega. Registrar erros, timeouts, cancelamentos e evidências; não produzir um resultado `completed` de **task** sem os gates que existirão apenas no Slice 2.
 - Encerrar o Runner ao final de seu papel de teste; liberar lock somente após confirmar término do Pi. Testar chamada direta com Pi falso e com Pi real.
 
-**Não alterar**
+#### Não alterar
 
 - Não criar supervisor residente, API HTTP permanente, Named Pipe, execução paralela ou serviço operacional. `[Fonte: docs_devout/02-design/contrato-orquestracao-mvp.md#Seções 2 e 3]`
 - Não atualizar oficialmente `registro.md`, aprovar task, abrir outra sessão por conta própria nem tratar evidência do Pi como autorização. `[Fonte: docs_devout/02-design/contrato-orquestracao-mvp.md#Seções 3 e 6]`
 - Não guardar segredos ou históricos completos `.pi`/`.openclaw` nas evidências. `[Fonte: docs_devout/02-design/contrato-orquestracao-mvp.md#Seção 8.1]`
 
-**Entregáveis**
+#### Entregáveis
 
 - Executável CLI Role Runner, interface/documentação do arquivo de solicitação e dos resultados, diretórios de execução e integração com Driver/lock.
 - Testes de validação de solicitação, resultado atômico, logs sanitizados, erro de Pi e execução real inofensiva.
 
-**Critério de conclusão**
+#### Critério de conclusão
 
 - Uma chamada CLI real cria um `runId`, executa um Pi, escreve eventos e resultado verificáveis, confirma término de ambos os processos e libera exclusividade. Uma solicitação inválida ou um crash/EOF não produz sucesso e não altera `registro.md`. O Runner deixa de existir ao fim da invocação.
 

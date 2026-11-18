@@ -1,8 +1,10 @@
-# Pi Driver e exclusividade — M01-T01 / M01-T02 / M01-T03
+# Infraestrutura Slice 1 — Pi Driver, exclusividade e Role Runner
 
+CLI temporária, solicitação local e evidências por execução: [`ROLE-RUNNER.md`](ROLE-RUNNER.md)
+(M01-T04; somente papel de teste). O Runner adquire a lease antes de lançar Pi.
 Aquisição global, uso com Driver, testes concorrentes e procedimento de reconciliação:
-[`PI-LOCK.md`](PI-LOCK.md). O Runner futuro deve adquirir a lease antes de lançar Pi;
-o Driver isolado e os smokes abaixo não adquirem trava implicitamente.
+[`PI-LOCK.md`](PI-LOCK.md). O Driver isolado e os smokes T01/T02 abaixo não adquirem
+trava implicitamente.
 
 Node.js sem dependências externas; lançamento suportado em **Windows nativo**.
 Código/testes ficam neste diretório; nenhum log operacional ou histórico é gravado pelo Driver.
@@ -16,15 +18,19 @@ $env:DEVOUT_PI_CMD = (Get-Command pi.cmd).Source
 npm.cmd --prefix src run test:smoke
 # Cancelamento real com provedor (também opt-in; executar separadamente):
 npm.cmd --prefix src run test:cancel
+# CLI Role Runner com Pi real e trava global (opt-in; executar separadamente):
+npm.cmd --prefix src run test:runner
 ```
 
 Não instala pacotes nem exige Gateway OpenClaw. Testes automatizados usam processos
 Node fictícios; a suíte de exclusividade disputa a trava entre processos concorrentes.
-O smoke inicia **um Pi real** em diretório temporário,
+A suíte do Runner também usa a raiz global padrão da trava: executar `test` e os
+smokes **separadamente**, sem outro Pi do workflow ativo/incerto.
+O smoke T01 inicia **um Pi real** em diretório temporário,
 com ferramentas, MCP, extensões, skills, templates e contexto de projeto desabilitados.
 Requer Pi compatível, acesso ao provedor e nenhuma execução Pi anterior do workflow
-ativa/incerta. Não executar vários smokes em paralelo: eles chamam o Driver diretamente, sem a
-trava global da T03.
+ativa/incerta. Não executar testes/smokes em paralelo. Os smokes T01/T02 chamam o
+Driver diretamente, sem a trava global da T03; `test:runner` adquire essa trava.
 Não trocar políticas/credenciais para contornar um bloqueio.
 
 O smoke envia apenas `get_state` e um pedido de resposta `PONG-DEVOUT-T01`.
