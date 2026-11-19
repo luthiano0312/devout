@@ -14,11 +14,13 @@ Automatizar gradualmente o workflow pessoal de desenvolvimento baseado nas skill
 
 ## Dentro do MVP incremental
 
-Uma task aprovada por vez em repositório descartável: implementador → revisor em duas fases → correção/reauditoria quando necessária, até aprovação técnica, sem commits oficiais. O contrato divide a entrega em quatro slices; isso não significa que todos estejam autorizados no marco atual.
+Uma task aprovada por vez em repositório descartável: implementador → revisor em duas fases → correção/reauditoria quando necessária, até aprovação técnica, sem commits oficiais. O contrato divide a entrega em quatro slices; sua aprovação não autoriza antecipar a execução dos slices seguintes.
 
-### Recorte atual — M01 / Slice 1
+### Entrega encerrada — M01 / Slice 1
 
-Somente a infraestrutura OpenClaw → Role Runner temporário → Pi Driver → Pi RPC: JSONL, eventos, controle de processos, término verificado, exclusividade, cancelamento e integração Windows. Tasks e critérios executáveis estão exclusivamente no [plano M01](../plano.md).
+**Slice 1 implementado, revisado e encerrado:** infraestrutura OpenClaw → Role Runner temporário → Pi Driver → Pi RPC: JSONL, eventos, controle de processos, término verificado, exclusividade, cancelamento e integração Windows. Tasks e critérios originais estão preservados no [plano M01 arquivado](../03-execucao/planos/marco-M01.md); conclusões e evidências constam no [registro oficial](../03-execucao/registro.md).
+
+**Slice 2 ainda não iniciado.** O contrato MVP completo está **parcialmente implementado**; os Slices 2, 3 e 4 permanecem futuros. Não há plano ativo; M02 ainda será planejado.
 
 Revisão automatizada, gates de papéis, transições oficiais, correção/reauditoria e recuperação de task pertencem aos slices seguintes. No Slice 1, o Runner não atualiza o registro nem aprova tasks.
 
@@ -33,4 +35,4 @@ Git Gateway, commits/merge/push automáticos, integração na `main`, automaçã
 - Somente projetos e dados fictícios, sem segredos ou credenciais Git amplas; isolamento forte não foi comprovado.
 - Saída `0`, `success=true` e prompt aceito não comprovam aprovação.
 - Aceite do MVP: cenários T01–T12 e critério global na seção 10 do contrato. Aceite do M01: critérios de cada task do plano; não exigir antecipadamente T01/T02 completos.
-- A implementação do M01 depende de plano, registro e `AGENTS.md` em baseline Git autorizado e conferido. Progresso real fica no [registro](../03-execucao/registro.md).
+- O baseline M01 foi conferido no Git (`c771c4b`), assim como os commits funcionais e de metadados das seis tasks concluídas. Novas implementações exigem novo plano aprovado e baseline autorizado; o plano arquivado não os substitui. Progresso real fica no [registro](../03-execucao/registro.md).

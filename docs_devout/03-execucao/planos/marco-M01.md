@@ -1,6 +1,11 @@
 # Plano de implementação — devout / M01: infraestrutura do Slice 1 (OpenClaw + Pi Agent)
 
-**Status:** APROVADO em 2026-11-17 — aguarda commit de baseline de `docs_devout/plano.md`, `docs_devout/03-execucao/registro.md` e `AGENTS.md` antes de iniciar a M01-T01.  
+**Status:** ENCERRADO E ARQUIVADO — Slice 1 implementado e revisado; encerramento documental autorizado pelo usuário. Aprovação original em 2026-11-17.
+
+**Rastreabilidade do encerramento:** M01-T01–M01-T06 constam como `concluída` no [registro oficial](../registro.md); commits funcionais, commits de metadados e evidências conferidos no Git até `35c1834906709628fee7889ca263c08ff7a9893e`. Baseline confirmado: `c771c4b39a34716f15728c1e0d5b2596e776bc41`.
+
+**Local do arquivo:** `docs_devout/03-execucao/planos/marco-M01.md` (antes `docs_devout/plano.md`). O conteúdo de planejamento abaixo foi preservado como histórico, inclusive pré-condições e caminhos da época; não representa plano ativo nem pendências atuais do M01. Não há plano ativo; M02 ainda será planejado e Slice 2 não foi iniciado. O contrato MVP completo permanece parcialmente implementado.
+
 **Data:** 2026-11-17.  
 **Repositório:** `luthiano0312/devout`; branch `main` consultada.  
 **Marco aprovado:** `M01` — Slice 1, infraestrutura de execução do orquestrador.  

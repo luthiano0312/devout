@@ -1,6 +1,6 @@
 # Arquitetura de alto nível — Devout
 
-**Situação:** desenho aprovado, ainda não implementado integralmente. Esta visão resume e aponta para o [contrato MVP v1.0](contrato-orquestracao-mvp.md), que permanece a fonte do comportamento detalhado. O [plano M01](../plano.md) limita a primeira entrega ao Slice 1.
+**Situação:** **Slice 1 implementado, revisado e encerrado no M01**; **Slice 2 ainda não iniciado**. O contrato MVP completo permanece **parcialmente implementado**, sem os fluxos dos Slices 2, 3 e 4. Esta visão resume e aponta para o [contrato MVP v1.0](contrato-orquestracao-mvp.md), fonte do comportamento detalhado. O [plano M01 arquivado](../03-execucao/planos/marco-M01.md) preserva o recorte da entrega concluída; não há plano ativo enquanto M02 aguarda planejamento.
 
 ## Contexto e topologia
 
@@ -28,7 +28,7 @@ Não há supervisor Node residente, serviço HTTP permanente ou Named Pipe no MV
 | Pi Agent | Produzir artefatos e avaliações; resultado declarado é candidato | Seções 3 e 6 |
 | Validadores | Conferir condições objetivas; não substituir revisão técnica independente | Seções 3 e 7–8 |
 
-As duas fases de revisão no mesmo Pi revisor e os gates de papéis fazem parte do desenho posterior ao Slice 1; não estão implementados por esta documentação.
+A topologia e a tabela descrevem o desenho aprovado completo, não apenas funcionalidades prontas. No Slice 1, o OpenClaw dispara e acompanha o Runner para execução técnica com papel de teste. As duas fases de revisão no mesmo Pi revisor, os gates de papéis, os validadores de workflow e as transições oficiais pertencem aos slices seguintes e ainda não foram implementados.
 
 ## Processos, estado e persistência
 
@@ -43,6 +43,8 @@ O Windows nativo não oferece isolamento forte apenas com instruções e extens�
 
 Antes de propor mudanças, consultar `adr/*.md`; não carregar `adr/archive/` por padrão. Os ADRs registram decisões existentes, sem criar nova aprovação nem afirmar validação técnica inexistente.
 
-## Validação pendente
+## Validação realizada e limites pendentes
 
-Consultar a seção 13 do contrato e as tasks M01-T01–T06: spawn seguro de `.cmd`, identificação de árvore de processos, prazos, lock, cancelamento assíncrono e comportamento local de `exec`/`process`. A [prova de integração](../reference/01-registro-integracao-openclaw-pi-e-decisoes.md) comprova apenas os experimentos registrados, não a infraestrutura definitiva.
+As seis tasks M01-T01–T06 estão concluídas no [registro oficial](../03-execucao/registro.md), com commits funcionais, relatórios e revisões associados. Essas evidências documentam spawn seguro, transporte RPC, ciclo de vida e identificação de processos, exclusividade, cancelamento assíncrono e disparo/acompanhamento real pelo OpenClaw no Windows. A [prova de integração](../reference/01-registro-integracao-openclaw-pi-e-decisoes.md) continua sendo evidência dos experimentos anteriores, não substituto das evidências do M01.
+
+O aceite completo do MVP, incluindo T01/T02 de workflow de papéis, permanece pendente nos slices seguintes. A seção 13 do contrato registra pontos de detalhamento do desenho; não implica que toda a infraestrutura continue por implementar. Testes controlados não garantem produção, execução prolongada irrestrita ou retomada durável após reinício do Gateway; preservar os limites registrados na revisão M01-T06.

@@ -2,7 +2,7 @@
 
 ## Sobre o projeto
 
-`devout` implementa, de forma incremental, um orquestrador de desenvolvimento de software. OpenClaw coordena as execuções e Pi Agent realiza operações de programação por RPC. O ambiente inicial é **Windows nativo**; a primeira entrega de código é o **Slice 1** (Driver, Runner temporário, processos e integração).
+`devout` implementa, de forma incremental, um orquestrador de desenvolvimento de software. OpenClaw coordena as execuções e Pi Agent realiza operações de programação por RPC. O ambiente inicial é **Windows nativo**. O **M01 / Slice 1** (Driver, Runner temporário, processos e integração) está implementado, revisado e encerrado. O **Slice 2 ainda não foi iniciado**; o contrato MVP completo está parcialmente implementado.
 
 ## Mapa de caminhos
 
@@ -13,13 +13,14 @@
 - **Visão e escopo:** `docs_devout/01-requisitos/escopo.md`.
 - **Arquitetura:** `docs_devout/02-design/arquitetura-hld.md`; decisões em `docs_devout/02-design/adr/`.
 - **Procedimentos:** `docs_devout/how-to/`; diagnóstico em `docs_devout/how-to/diagnosticar-ambiente-windows.md`.
-- **Plano do marco atual:** `docs_devout/plano.md` (M01 aprovado em 2026-11-17; confirmar commit de baseline). O plano está na raiz documental, não em `03-execucao/`.
-- **Registro oficial de execução:** `docs_devout/03-execucao/registro.md` (M01 inicializado em 2026-11-17; confirmar commit de baseline).
-- **Seleção de fontes para revisão independente:** `docs_devout/03-execucao/fontes-revisao.json` (configuração v1, com seleções para M01-T01, M01-T02, M01-T03, M01-T04, M01-T05 e M01-T06).
-- **Relatórios e revisões de tasks:** `docs_devout/03-execucao/achados/` (quando houver).
-- **Planos encerrados:** `docs_devout/03-execucao/planos/` (quando houver).
+- **Plano ativo:** temporariamente inexistente. `docs_devout/plano.md` é o caminho **previsto** para o próximo plano aprovado, na raiz documental; o arquivo não existe enquanto M02 aguarda planejamento.
+- **Plano M01 encerrado:** `docs_devout/03-execucao/planos/marco-M01.md`; preserva as seis tasks e o planejamento original como histórico, não autoriza novas execuções.
+- **Registro oficial de execução:** `docs_devout/03-execucao/registro.md` (M01-T01–M01-T06 concluídas; histórico preservado).
+- **Seleção histórica de fontes para revisão independente:** `docs_devout/03-execucao/fontes-revisao.json` (configuração v1 do M01, preservada com os caminhos do checkout anterior ao arquivamento; não seleciona tasks do M02).
+- **Relatórios e revisões de tasks:** `docs_devout/03-execucao/achados/`.
+- **Planos encerrados:** `docs_devout/03-execucao/planos/`.
 
-O plano e o registro foram preparados após aprovação do M01. **Não iniciar implementação até que esses arquivos e este mapa estejam versionados em commit de baseline confirmado**. Conferir o baseline Git antes da primeira task. Se houver divergência entre este mapa e o checkout real, interromper a execução e reconciliar.
+O baseline do M01 foi confirmado em `c771c4b39a34716f15728c1e0d5b2596e776bc41`; sua conclusão está registrada até `35c1834906709628fee7889ca263c08ff7a9893e`. **Não iniciar nova implementação sem plano aprovado, registro correspondente e este mapa versionados em commit de baseline confirmado**. M02 ainda não foi planejado. Se houver divergência entre este mapa e o checkout real, interromper a execução e reconciliar.
 
 ## Fontes de verdade e leitura seletiva
 
@@ -29,11 +30,11 @@ O plano e o registro foram preparados após aprovação do M01. **Não iniciar i
 - **Decisões conceituais de workflow:** `docs_devout/explanation/decisoes-workflow-automacao-2026-11-12.md`.
 - **Skills:** `.agents/skills/plan/SKILL.md`, `.agents/skills/implement/SKILL.md`, `.agents/skills/docs/SKILL.md` e referências necessárias a cada papel.
 
-O contrato define o comportamento do MVP; o plano limita a execução atual ao Slice 1; somente o registro informa o progresso oficial. HLD e ADRs resumem decisões existentes, sem substituir o contrato. Contexto conceitual e protótipos não autorizam antecipar slices nem migrar a `plan` para arquivos por task.
+O contrato define o comportamento do MVP completo, ainda parcialmente implementado; o plano arquivado delimita o Slice 1 encerrado, sem autorizar slices seguintes. Não há recorte executável ativo; somente o registro informa o progresso oficial. HLD e ADRs resumem decisões existentes, sem substituir o contrato. Contexto conceitual e protótipos não autorizam antecipar slices nem migrar a `plan` para arquivos por task.
 
-Fora da avaliação independente, carregar primeiro a task atual em `docs_devout/plano.md` e apenas as fontes pertinentes. Na avaliação independente, preparar primeiro a entrada filtrada conforme abaixo, sem abrir o plano inteiro. Consultar os ADRs antes de propor mudanças arquiteturais relevantes. Por padrão, ler somente `docs_devout/02-design/adr/*.md` (ativos), sem busca recursiva; `docs_devout/02-design/adr/archive/` (quando houver) fica reservado à investigação histórica ou revisão arquitetural ampla. Não carregar `docs_devout/explanation/archive/` em massa; rascunhos e briefings não substituem o contrato aprovado.
+Quando houver novo plano ativo aprovado, fora da avaliação independente carregar primeiro a task atual em `docs_devout/plano.md` e apenas as fontes pertinentes. Na ausência atual desse arquivo, não iniciar implementação nem usar o plano arquivado como plano vigente. Na avaliação independente, preparar primeiro a entrada filtrada conforme abaixo, sem abrir o plano inteiro. Consultar os ADRs antes de propor mudanças arquiteturais relevantes. Por padrão, ler somente `docs_devout/02-design/adr/*.md` (ativos), sem busca recursiva; `docs_devout/02-design/adr/archive/` (quando houver) fica reservado à investigação histórica ou revisão arquitetural ampla. Não carregar `docs_devout/explanation/archive/` em massa; rascunhos e briefings não substituem o contrato aprovado.
 
-Para revisar M01-T01, M01-T02, M01-T03, M01-T04, M01-T05 ou M01-T06, executar antes de relatos, Observações, diffs irrestritos ou documentos mistos (exemplo M01-T06; para as outras seleções autorizadas, trocar somente o ID):
+As revisões M01-T01–M01-T06 estão finalizadas. O comando e as regras abaixo documentam o procedimento histórico, cuja configuração preservada usa `docs_devout/plano.md` no checkout **anterior ao arquivamento** (referência: `35c1834906709628fee7889ca263c08ff7a9893e`); não executar esse comando no checkout atual sem nova preparação autorizada. Para uma nova revisão independente, a entrada deve ser preparada antes de relatos, Observações, diffs irrestritos ou documentos mistos. Exemplo histórico M01-T06 (demais seleções M01 trocavam somente o ID):
 
 ```powershell
 python .agents/skills/implement/scripts/review_inputs.py docs_devout/03-execucao/registro.md M01-T06 --sources docs_devout/03-execucao/fontes-revisao.json
@@ -61,7 +62,7 @@ Sem dependências externas ou etapa de instalação; ainda não há comando de l
 
 ## Antes de implementar uma task
 
-1. Ler o plano aprovado em `docs_devout/plano.md` e o registro em `docs_devout/03-execucao/registro.md`, além das instruções da skill aplicável. Na avaliação independente, obter primeiro task/restrições e metadados pelo preparador acima, sem Observações/relatos. Ambos são pré-condições obrigatórias; ausência ou divergência bloqueia implementação.
+1. Exigir novo plano aprovado e ativo em `docs_devout/plano.md` (atualmente inexistente) e ler o registro em `docs_devout/03-execucao/registro.md`, além das instruções da skill aplicável. O M01 arquivado não satisfaz essa pré-condição. Na avaliação independente, obter primeiro task/restrições e metadados pelo preparador acima, sem Observações/relatos. Ambos são pré-condições obrigatórias; ausência ou divergência bloqueia implementação.
 2. Conferir a task, dependências obrigatórias, estado, branch, arquivos existentes e baseline Git; preservar trabalho preexistente.
 3. Implementar **somente** `Fazer` e respeitar integralmente `Não alterar`. Persistir testes/evidências; relatar achados, limites e pendências.
 4. Não declarar uma task pronta para a próxima sem revisão, condições de conclusão e commits manuais autorizados do workflow vigente. O Git Gateway futuro não integra este Slice 1.
