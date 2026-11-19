@@ -1,9 +1,11 @@
 # Perfil de engenharia controlado — M02-T01
 
 Perfil opt-in para **dados inteiramente fictícios**, Windows nativo, Pi RPC e Git
-local descartável. Não habilita os papéis implementador/revisor/corretor, aprovação
-de tasks, commits, push, remotes ou transições oficiais. O Runner continua temporário,
-com `role: "test"`, um prompt e a mesma lease global do M01.
+local descartável. O perfil por si só não habilita papéis, aprovação de tasks,
+commits, push, remotes ou transições oficiais. A M02-T01 usa `role: "test"`;
+a M02-T03 acrescenta o [implementador controlado](IMPLEMENTER.md) com pré-validação
+e gate de entrega, sem revisão/correção nem mutações oficiais. O Runner continua
+temporário, com um prompt e a mesma lease global do M01.
 
 ## Entrada e ferramentas
 

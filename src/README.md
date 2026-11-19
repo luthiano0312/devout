@@ -1,9 +1,12 @@
-# Pi Driver, exclusividade e Role Runner — Slice 1 e perfil M02-T01
+# Pi Driver, exclusividade e Role Runner — Slice 1 e M02-T01–T03
 
 CLI temporária, solicitação local e evidências por execução: [`ROLE-RUNNER.md`](ROLE-RUNNER.md)
-(M01-T04/T05; somente papel de teste, com cancelamento entre invocações). O Runner adquire a lease antes de lançar Pi.
+(M01-T04/T05; papel de teste e cancelamento entre invocações). O Runner adquire a lease antes de lançar Pi.
 Perfil opt-in de engenharia em Git fictício, ferramentas e limites Windows:
-[`ENGINEERING.md`](ENGINEERING.md) (M02-T01; não habilita ainda os papéis de workflow).
+[`ENGINEERING.md`](ENGINEERING.md) (M02-T01).
+Entrada aprovada/baseline: [`TASK-INPUT.md`](TASK-INPUT.md) (M02-T02).
+Papel implementador, relatório e gate de entrega: [`IMPLEMENTER.md`](IMPLEMENTER.md)
+(M02-T03; ensaio técnico sem transições oficiais, commits ou revisão).
 Disparo/acompanhamento pelo Gateway real no Windows, incluindo duplicidade, cancelamento,
 falhas e limites de restart: [`OPENCLAW.md`](OPENCLAW.md) (M01-T06, opt-in separado).
 Aquisição global, uso com Driver, testes concorrentes e procedimento de reconciliação:
@@ -28,6 +31,8 @@ npm.cmd --prefix src run test:runner
 npm.cmd --prefix src run test:runner-cancel
 # Perfil de engenharia: edição + node --test em Git fictício, opt-in separado:
 npm.cmd --prefix src run test:engineering
+# Implementador real: task selecionada + código/teste/relatório e gate de entrega:
+npm.cmd --prefix src run test:implementer
 ```
 
 Não instala pacotes nem exige Gateway OpenClaw. Testes automatizados usam processos

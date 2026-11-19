@@ -1,4 +1,4 @@
-# Role Runner temporário — M01-T04/T05 e perfil M02-T01
+# Role Runner temporário — M01-T04/T05 e M02-T01/T03
 
 ```powershell
 node src/role-runner.mjs run --config "C:\caminho-local\request.json"
@@ -10,9 +10,11 @@ via Driver, consulta `get_state`, envia **um** prompt de teste, observa aceitaç
 lease. Sem retry de Pi, outra sessão, transição oficial, Git ou serviço residente.
 O Runner termina depois de persistir o resultado e drenar sua saída.
 
-Somente `role: "test"` está autorizado neste Slice. Não representa implementador,
-revisor ou corretor de uma task real. Gates desses papéis pertencem ao Slice 2;
-cancelamento local entre invocações está descrito abaixo (M01-T05). O procedimento
+No Slice 1, `role: "test"` é o papel de teste, não um papel de task real.
+A M02-T03 adiciona `role: "implementador"` somente para ensaio em fixture aprovada,
+com entrada validada, relatório e gate de entrega: [`IMPLEMENTER.md`](IMPLEMENTER.md).
+Não habilita revisão/correção, commits ou transições oficiais.
+Cancelamento local entre invocações está descrito abaixo (M01-T05). O procedimento
 OpenClaw da M01-T06 está em [`OPENCLAW.md`](OPENCLAW.md).
 A M02-T01 adiciona somente o perfil opt-in `configured-engineering` ao mesmo papel
 `test`: admite Git fictício preparado e ferramentas de programação, sem automatizar

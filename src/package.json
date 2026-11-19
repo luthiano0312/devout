@@ -10,6 +10,7 @@
     "test:cancel": "node test/smoke-cancel.mjs",
     "test:runner": "node test/smoke-runner.mjs",
     "test:runner-cancel": "node test/smoke-runner-cancel.mjs",
-    "test:engineering": "node test/smoke-engineering.mjs"
+    "test:engineering": "node test/smoke-engineering.mjs",
+    "test:implementer": "node test/smoke-implementer.mjs"
   }
 }

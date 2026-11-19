@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// Slice 1: a single disposable test role, not the official task workflow.
+// Disposable test role + M02 implementation rehearsal, never official state transitions.
 import { randomUUID } from 'node:crypto';
 import { closeSync, existsSync, fsyncSync, lstatSync, mkdirSync, openSync,
   readFileSync, readdirSync, realpathSync, statSync, writeFileSync } from 'node:fs';
@@ -10,6 +10,7 @@ import { acquirePiLock } from './pi-lock.mjs';
 import { windowsLaunchSpec } from './pi-driver.mjs';
 import { engineeringInstructions, validateEngineeringWorkspace } from './engineering-workspace.mjs';
 import { atomicWriteJson } from './operational-json.mjs';
+import { captureImplementation, implementationEntry, implementationPrompt, validateImplementationDelivery } from './implementation-delivery.mjs';
 import { controlTransaction, initializeControl, requestCancellation } from './run-control.mjs';
 export { atomicWriteJson } from './operational-json.mjs';
 
@@ -22,6 +23,7 @@ const timerKeys = ['commandTimeoutMs', 'settlementTimeoutMs', 'abortTimeoutMs',
 const driverKeys = [...timerKeys, 'maxRecordBytes', 'maxQueuedBytes', 'maxPending'];
 const codes = new Set([
   'INVALID_REQUEST', 'PERSISTENCE_FAILED', 'MODEL_OR_STATE_INVALID', 'ASSISTANT_ERROR',
+  'IMPLEMENTATION_ENTRY_REJECTED', 'IMPLEMENTATION_DELIVERY_REJECTED', 'REPORT_PATH_REJECTED',
   'SETTLEMENT_ABORTED', 'RESPONSE_MISMATCH', 'TERMINATION_FAILED', 'RUNNER_FAILED',
   'CONTROL_INVALID', 'CONTROL_IO_FAILED', 'CONTROL_BUSY',
   'LOCK_BUSY', 'LOCK_RECONCILIATION_REQUIRED', 'LOCK_METADATA_INVALID', 'LOCK_READ_FAILED',
@@ -106,13 +108,18 @@ function disposableWorkspace(workspace, engineering) {
 export function validateRequest(input) {
   try {
     object(input, ['schemaVersion', 'taskId', 'role', 'workspace', 'artifactsRoot',
-      'piCmd', 'modelProfile', 'prompt', 'expectedText', 'driver', 'engineering']);
+      'piCmd', 'modelProfile', 'prompt', 'expectedText', 'driver', 'engineering', 'taskInputId', 'reportPath']);
     const engineering = input.modelProfile === 'configured-engineering';
     if (engineering ? !input.engineering : input.engineering !== undefined) fail('INVALID_REQUEST');
-    if (input.schemaVersion !== 1 || input.role !== 'test' ||
+    const implementer = input.role === 'implementador';
+    if (implementer ? (!engineering || input.prompt !== undefined || input.expectedText !== undefined ||
+        typeof input.taskInputId !== 'string' || !/^[a-f0-9]{64}$/u.test(input.taskInputId) ||
+        typeof input.reportPath !== 'string' || input.reportPath.length > 240) :
+      (input.taskInputId !== undefined || input.reportPath !== undefined)) fail('INVALID_REQUEST');
+    if (input.schemaVersion !== 1 || !['test', 'implementador'].includes(input.role) ||
         !['configured-isolated', 'configured-engineering'].includes(input.modelProfile) ||
         typeof input.taskId !== 'string' || !/^[A-Za-z0-9][A-Za-z0-9_-]{0,63}$/u.test(input.taskId)) fail('INVALID_REQUEST');
-    text(input.prompt, textLimit); text(input.expectedText, textLimit);
+    if (!implementer) { text(input.prompt, textLimit); text(input.expectedText, textLimit); }
     for (const key of ['workspace', 'artifactsRoot', 'piCmd']) localAbsolute(input[key]);
     const workspace = disposableWorkspace(input.workspace, input.engineering);
     const artifactsRoot = canonicalFuture(resolve(input.artifactsRoot));
@@ -138,8 +145,18 @@ export function loadRequest(path) {
 }
 
 /** acquire/notify are trusted test seams, never accepted from a request/CLI. */
-export async function runRole(input, { acquire = acquirePiLock, notify = () => {} } = {}) {
+export async function runRole(input, { acquire = acquirePiLock, notify = () => {}, approval } = {}) {
   const config = validateRequest(input);
+  const implementer = config.role === 'implementador';
+  // Approval is supplied separately by the trusted caller, NEVER by the model/config.
+  let entry, before;
+  if (implementer) {
+    try {
+      approval = structuredClone(approval); entry = implementationEntry(config, approval);
+      text(implementationPrompt(config, entry), textLimit);
+    }
+    catch (error) { fail(safeCode({ code: error.deliveryCode })); }
+  }
   const runId = `run-${randomUUID()}`;
   const runDir = join(config.artifactsRoot, 'runs', runId);
   // No Pi exists if this initial persistence fails.
@@ -155,14 +172,16 @@ export async function runRole(input, { acquire = acquirePiLock, notify = () => {
   const observed = { stateCorrelated: false, modelAvailable: false, promptAccepted: false,
     settled: false, aborted: false, assistantError: false, markerMatched: false, responseStarted: false,
     eventCount: 0, diagnosticBytes: 0 };
-  const harmlessTests = new Set();
+  const harmlessTests = new Set(), implementationTests = new Map();
   if (config.engineering) observed.engineering = { toolStarts: 0, toolEnds: 0,
-    harmlessTestStarted: false, harmlessTestSucceeded: false };
+    harmlessTestStarted: false, harmlessTestSucceeded: false,
+    ...(implementer ? { testEvidence: { started: 0, completed: 0, pending: 0,
+      latestOutcome: null, correlated: true } } : {}) };
   let lease, driver, termination = null, released = false, launchAttempted = false;
   let state = 'starting', sequence = 0, journalFailed = false, textSeen = '', finalMessageSeen = false;
   let cancelRequested = false, controlReady = false, watcher, polling = null;
   const startedAt = new Date().toISOString();
-  const base = () => ({ schemaVersion: 1, runId, taskId: config.taskId, role: 'test', runnerPid: process.pid });
+  const base = () => ({ schemaVersion: 1, runId, taskId: config.taskId, role: config.role, runnerPid: process.pid });
   function record(type, details = {}) {
     const event = { schemaVersion: 1, runId, seq: ++sequence, at: new Date().toISOString(), type, ...details };
     try {
@@ -214,6 +233,13 @@ export async function runRole(input, { acquire = acquirePiLock, notify = () => {
     if (journalFailed) fail('PERSISTENCE_FAILED');
     // Revalidate immediately before launch; marker/paths are not a sandbox.
     disposableWorkspace(config.workspace, config.engineering);
+    if (implementer) {
+      try {
+        entry = implementationEntry(config, approval);
+        before = captureImplementation(config, entry);
+      } catch (error) { fail(safeCode({ code: error.deliveryCode })); }
+      atomicWriteJson(join(runDir, 'implementation-input.json'), { input: entry.input, snapshot: entry.snapshot });
+    }
     const { settlementTimeoutMs = 120_000, ...driverOptions } = config.driver;
     driver = await phase(() => {
       launchAttempted = true;
@@ -235,12 +261,36 @@ export async function runRole(input, { acquire = acquirePiLock, notify = () => {
       if (config.engineering && ['read', 'edit', 'write', 'bash'].includes(event.toolName)) {
         if (event.type === 'tool_execution_start') {
           observed.engineering.toolStarts++;
-          if (event.toolName === 'bash' && event.args?.command === 'node --test' && typeof event.toolCallId === 'string') {
-            harmlessTests.add(event.toolCallId); observed.engineering.harmlessTestStarted = true;
+          if (event.toolName === 'bash' && event.args?.command === 'node --test') {
+            if (implementer) {
+              const tests = observed.engineering.testEvidence;
+              tests.started++; tests.pending++; tests.latestOutcome = 'pending';
+              if (typeof event.toolCallId !== 'string' || !event.toolCallId || implementationTests.has(event.toolCallId)) {
+                tests.correlated = false;
+              } else implementationTests.set(event.toolCallId, { order: tests.started, completed: false });
+              observed.engineering.harmlessTestStarted = true;
+            } else if (typeof event.toolCallId === 'string') {
+              harmlessTests.add(event.toolCallId); observed.engineering.harmlessTestStarted = true;
+            }
           }
         } else if (event.type === 'tool_execution_end') {
           observed.engineering.toolEnds++;
-          if (harmlessTests.delete(event.toolCallId) && event.isError === false) observed.engineering.harmlessTestSucceeded = true;
+          if (implementer && event.toolName === 'bash' && implementationTests.has(event.toolCallId)) {
+            const tests = observed.engineering.testEvidence, run = implementationTests.get(event.toolCallId);
+            if (run.completed) tests.correlated = false;
+            else {
+              run.completed = true; tests.completed++; tests.pending--;
+              // Start order defines the final attempt; late older completions cannot replace it.
+              if (run.order === tests.started) tests.latestOutcome = event.isError === false ? 'passed' : 'failed';
+            }
+          } else if (!implementer && harmlessTests.delete(event.toolCallId) && event.isError === false) {
+            observed.engineering.harmlessTestSucceeded = true;
+          }
+        }
+        if (implementer) {
+          const tests = observed.engineering.testEvidence;
+          observed.engineering.harmlessTestSucceeded = tests.correlated && tests.started > 0 &&
+            tests.pending === 0 && tests.completed === tests.started && tests.latestOutcome === 'passed';
         }
       }
       if (!observed.responseStarted && event.type === 'message_update' &&
@@ -278,7 +328,9 @@ export async function runRole(input, { acquire = acquirePiLock, notify = () => {
     observed.modelAvailable = typeof response.data?.model?.id === 'string' && response.data.model.id.length > 0;
     if (!observed.stateCorrelated || !observed.modelAvailable || response.data?.isStreaming !== false) fail('MODEL_OR_STATE_INVALID');
     record('state_observed', { modelAvailable: true });
-    const prompt = config.engineering ? `${engineeringInstructions}\n\n${config.prompt}` : config.prompt;
+    const rolePrompt = implementer ? implementationPrompt(config, entry) : config.prompt;
+    text(rolePrompt, textLimit);
+    const prompt = config.engineering ? `${engineeringInstructions}\n\n${rolePrompt}` : rolePrompt;
     const result = await phase(() => driver.promptAndWait(prompt, { timeoutMs: settlementTimeoutMs }));
     observed.promptAccepted = result.response.success === true && result.response.data?.disposition === 'started';
     observed.settled = result.settled.type === 'agent_settled';
@@ -290,7 +342,7 @@ export async function runRole(input, { acquire = acquirePiLock, notify = () => {
       aborted: observed.aborted, assistantError: observed.assistantError, markerMatched: observed.markerMatched });
     if (observed.aborted) fail('SETTLEMENT_ABORTED');
     if (observed.assistantError) fail('ASSISTANT_ERROR');
-    if (!observed.markerMatched) fail('RESPONSE_MISMATCH');
+    if (!implementer && !observed.markerMatched) fail('RESPONSE_MISMATCH');
   } catch (error) {
     errors.add(safeCode(error)); record('failure', { code: safeCode(error) });
   } finally {
@@ -335,9 +387,22 @@ export async function runRole(input, { acquire = acquirePiLock, notify = () => {
     try { transition(gone ? 'terminated' : 'uncertain'); } catch { /* final result must not claim success */ }
     try { closeSync(eventsFd); } catch { errors.add('PERSISTENCE_FAILED'); }
   }
+  let delivery;
+  if (implementer) {
+    delivery = validateImplementationDelivery(config, entry, before, {
+      terminated: launchAttempted && termination?.state === 'terminated' && termination.processesGone === true && termination.canRelease === true,
+      released, processSucceeded: errors.size === 0, testEvidence: observed.engineering?.testEvidence,
+    });
+    if (!delivery.accepted) errors.add('IMPLEMENTATION_DELIVERY_REJECTED');
+    try { atomicWriteJson(join(runDir, 'delivery.json'), delivery); }
+    catch { fail('PERSISTENCE_FAILED'); }
+  }
   const technicalOutcome = errors.size ? (observed.aborted || errors.has('CANCELLED') ? 'interrupted' : 'failed') : 'succeeded';
   const result = { ...base(), startedAt, finishedAt: new Date().toISOString(), state, technicalOutcome,
     taskApproved: false, observed, cancellation: { requested: cancelRequested },
+    ...(implementer ? { roleOutcome: delivery.accepted ? 'completed' :
+      (observed.aborted || errors.has('CANCELLED') ? 'interrupted' :
+        (errors.size > 1 ? 'failed' : 'blocked')), delivery } : {}),
     errorCodes: [...errors], lock: { acquired: Boolean(lease), released },
     termination: termination ? {
       state: termination.state, processesGone: termination.processesGone === true,
@@ -368,15 +433,23 @@ export async function main(args = process.argv.slice(2)) {
     }
   }
   // No shell forwarding, arbitrary flags, injected factories or RPC commands.
-  if (args.length !== 3 || args[0] !== 'run' || args[1] !== '--config' || !args[2]) {
+  if (![3, 5].includes(args.length) || args[0] !== 'run' || args[1] !== '--config' || !args[2] ||
+      (args.length === 5 && (args[3] !== '--approval' || !args[4]))) {
     process.stderr.write('{"type":"request_rejected","code":"INVALID_REQUEST"}\n');
     return 2;
   }
   try {
     const request = loadRequest(args[2]);
-    const outcome = await runRole(request, { notify: event => process.stdout.write(JSON.stringify(event) + '\n') });
+    let approval;
+    if (args.length === 5) {
+      localAbsolute(args[4]);
+      approval = jsonFile(args[4], requestLimit);
+    }
+    if ((request.role === 'implementador') !== Boolean(approval)) fail('INVALID_REQUEST');
+    const outcome = await runRole(request, { approval, notify: event => process.stdout.write(JSON.stringify(event) + '\n') });
     process.stdout.write(JSON.stringify({ type: 'result', runId: outcome.result.runId,
-      state: outcome.result.state, technicalOutcome: outcome.result.technicalOutcome, taskApproved: false }) + '\n');
+      state: outcome.result.state, technicalOutcome: outcome.result.technicalOutcome, taskApproved: false,
+      ...(outcome.result.roleOutcome ? { roleOutcome: outcome.result.roleOutcome } : {}) }) + '\n');
     return outcome.exitCode;
   } catch (error) {
     process.stderr.write(JSON.stringify({ type: 'runner_error', code: safeCode(error) }) + '\n');

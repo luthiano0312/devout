@@ -16,7 +16,7 @@
 - **Plano ativo:** `docs_devout/plano.md` — M02 (Slice 2), aprovado em 2026-11-19; execução somente depois de confirmar commit de baseline.
 - **Plano M01 encerrado:** `docs_devout/03-execucao/planos/marco-M01.md`; preserva as seis tasks e o planejamento original como histórico, não autoriza novas execuções.
 - **Registro oficial de execução:** `docs_devout/03-execucao/registro.md` (M01-T01–M01-T06 e M02-T01 concluídas; consultar este registro para os estados atuais das demais tasks e preservar o histórico).
-- **Seleção de fontes para revisão independente:** `docs_devout/03-execucao/fontes-revisao.json` (M01 histórico e seleção M02-T01 preservados; seleção M02-T02 preparada para revisão; as demais M02 exigem recorte explícito).
+- **Seleção de fontes para revisão independente:** `docs_devout/03-execucao/fontes-revisao.json` (M01 histórico e seleções M02-T01/T02 preservados, com revisões encerradas; seleção M02-T03 preparada para revisão; as demais M02 exigem recorte explícito).
 - **Relatórios e revisões de tasks:** `docs_devout/03-execucao/achados/`.
 - **Planos encerrados:** `docs_devout/03-execucao/planos/`.
 
@@ -46,7 +46,7 @@ Exemplo histórico da entrada usada na revisão independente da M02-T01; não ex
 python .agents/skills/implement/scripts/review_inputs.py docs_devout/03-execucao/registro.md M02-T01 --sources docs_devout/03-execucao/fontes-revisao.json
 ```
 
-Entrada atual para a revisão independente da M02-T02, em conversa nova:
+Exemplo histórico da entrada usada na revisão independente da M02-T02, já concluída; não executar como nova revisão:
 
 ```powershell
 python .agents/skills/implement/scripts/review_inputs.py docs_devout/03-execucao/registro.md M02-T02 --sources docs_devout/03-execucao/fontes-revisao.json
@@ -54,7 +54,15 @@ python .agents/skills/implement/scripts/review_inputs.py docs_devout/03-execucao
 
 Na M02-T02, `src/TASK-INPUT.md` e `src/ENGINEERING.md` ficam integralmente adiados, assim como `src/README.md`, `src/ROLE-RUNNER.md`, `src/PI-LOCK.md`, `src/OPENCLAW.md` e o plano M01 arquivado. Código e testes permanecem examináveis na fase inicial. O contrato, HLD e ADRs têm recortes explícitos, com narrativas históricas/evidências adiadas. Todos os trechos e diffs adiados devem ser examinados após persistir a avaliação inicial; não iniciar a revisão pelo relatório da implementação.
 
-Persistir a saída em arquivo temporário **fora do repositório**, conforme `.agents/skills/implement/references/entradas-independentes.md`; não versionar esse JSON gerado. A configuração fornece task completa, restrições e fontes iniciais, adiando evidências anteriores, trechos mistos e experimentos históricos. Persistir a avaliação inicial antes de consultar `deferred_sections`, relatos e todos os diffs adiados; o filtro não reduz a revisão final. Revalidar a entrada com o mesmo comando e `--check-input <entrada-temporaria.json>`. Para M02, há seleções de M02-T01 (revisão encerrada) e M02-T02 (preparada para revisão); as demais tasks requerem preparação específica autorizada: sem seleção válida, pedir o recorte, sem fallback integral. Nas M01-T02, M01-T03, M01-T04, M01-T05 e M01-T06, o guia `src/README.md` fica integralmente adiado para não antecipar o desenho/relato da implementação; nas M01-T03, M01-T04, M01-T05 e M01-T06, isso também vale para `src/PI-LOCK.md`. Nas M01-T04, M01-T05 e M01-T06, `src/ROLE-RUNNER.md` também fica integralmente adiado. Na M01-T06, `src/OPENCLAW.md` fica integralmente adiado, incluindo procedimento, evidências e limites relatados; código, testes e o roteiro executável `src/test/openclaw-procedure.txt` permanecem entregáveis examináveis na fase inicial, sem liberar os guias ou relatos. O exame completo desses guias continua obrigatório na fase de confronto. Os quatro campos das M01-T01, M01-T02, M01-T03, M01-T04, M01-T05 e M01-T06 são subtítulos Markdown para compatibilidade com o preparador, sem mudança dos requisitos.
+Entrada atual para a revisão independente da M02-T03, em conversa nova:
+
+```powershell
+python .agents/skills/implement/scripts/review_inputs.py docs_devout/03-execucao/registro.md M02-T03 --sources docs_devout/03-execucao/fontes-revisao.json
+```
+
+Na M02-T03, `src/IMPLEMENTER.md`, `src/TASK-INPUT.md`, `src/ENGINEERING.md`, `src/README.md`, `src/ROLE-RUNNER.md`, `src/PI-LOCK.md` e `src/OPENCLAW.md` ficam integralmente adiados, assim como o plano M01 arquivado, o diagnóstico Windows e o registro histórico da integração. Código, testes e roteiro de smoke permanecem examináveis na fase inicial. A task completa, restrições comuns e referências normativas da skill manual `implement` ficam disponíveis inicialmente; outras tasks do plano ficam adiadas. Contrato (incluindo processos, níveis de resultado e gate do implementador), HLD, escopo e ADRs têm recortes explícitos, separando decisões vigentes de narrativas históricas/evidências. Não abrir guias, relatos, Observações ou diffs adiados antes de persistir a avaliação inicial. Na fase de confronto, examinar obrigatoriamente todos os conteúdos/diffs adiados e o histórico pertinente; a seleção não reduz a revisão final. A preparação da seleção não é uma revisão da entrega nem autorização de commits.
+
+Persistir a saída em arquivo temporário **fora do repositório**, conforme `.agents/skills/implement/references/entradas-independentes.md`; não versionar esse JSON gerado. A configuração fornece task completa, restrições e fontes iniciais, adiando evidências anteriores, trechos mistos e experimentos históricos. Persistir a avaliação inicial antes de consultar `deferred_sections`, relatos e todos os diffs adiados; o filtro não reduz a revisão final. Revalidar a entrada com o mesmo comando e `--check-input <entrada-temporaria.json>`. Para M02, há seleções de M02-T01 e M02-T02 (revisões encerradas) e M02-T03 (preparada para revisão); as demais tasks requerem preparação específica autorizada: sem seleção válida, pedir o recorte, sem fallback integral. Nas M01-T02, M01-T03, M01-T04, M01-T05 e M01-T06, o guia `src/README.md` fica integralmente adiado para não antecipar o desenho/relato da implementação; nas M01-T03, M01-T04, M01-T05 e M01-T06, isso também vale para `src/PI-LOCK.md`. Nas M01-T04, M01-T05 e M01-T06, `src/ROLE-RUNNER.md` também fica integralmente adiado. Na M01-T06, `src/OPENCLAW.md` fica integralmente adiado, incluindo procedimento, evidências e limites relatados; código, testes e o roteiro executável `src/test/openclaw-procedure.txt` permanecem entregáveis examináveis na fase inicial, sem liberar os guias ou relatos. O exame completo desses guias continua obrigatório na fase de confronto. Os quatro campos das M01-T01, M01-T02, M01-T03, M01-T04, M01-T05 e M01-T06 são subtítulos Markdown para compatibilidade com o preparador, sem mudança dos requisitos.
 
 ## Convenções e limites atuais
 
