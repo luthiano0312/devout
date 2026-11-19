@@ -8,6 +8,7 @@ import { dirname, isAbsolute, join, relative, resolve, sep } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import { acquirePiLock } from './pi-lock.mjs';
 import { windowsLaunchSpec } from './pi-driver.mjs';
+import { engineeringInstructions, validateEngineeringWorkspace } from './engineering-workspace.mjs';
 import { atomicWriteJson } from './operational-json.mjs';
 import { controlTransaction, initializeControl, requestCancellation } from './run-control.mjs';
 export { atomicWriteJson } from './operational-json.mjs';
@@ -78,7 +79,8 @@ function jsonFile(path, maxBytes) {
   if (bytes.length > maxBytes || (bytes[0] === 0xef && bytes[1] === 0xbb && bytes[2] === 0xbf)) fail('INVALID_REQUEST');
   return JSON.parse(new TextDecoder('utf-8', { fatal: true }).decode(bytes));
 }
-function disposableWorkspace(workspace) {
+function disposableWorkspace(workspace, engineering) {
+  if (engineering !== undefined) return validateEngineeringWorkspace(workspace, engineering);
   if (!statSync(workspace).isDirectory() || lstatSync(workspace).isSymbolicLink()) fail('INVALID_REQUEST');
   const actual = realpathSync(workspace), temp = realpathSync(tmpdir());
   if (!inside(temp, actual) || actual === temp || inside(repository, actual) || inGitTree(actual)) fail('INVALID_REQUEST');
@@ -104,12 +106,15 @@ function disposableWorkspace(workspace) {
 export function validateRequest(input) {
   try {
     object(input, ['schemaVersion', 'taskId', 'role', 'workspace', 'artifactsRoot',
-      'piCmd', 'modelProfile', 'prompt', 'expectedText', 'driver']);
-    if (input.schemaVersion !== 1 || input.role !== 'test' || input.modelProfile !== 'configured-isolated' ||
+      'piCmd', 'modelProfile', 'prompt', 'expectedText', 'driver', 'engineering']);
+    const engineering = input.modelProfile === 'configured-engineering';
+    if (engineering ? !input.engineering : input.engineering !== undefined) fail('INVALID_REQUEST');
+    if (input.schemaVersion !== 1 || input.role !== 'test' ||
+        !['configured-isolated', 'configured-engineering'].includes(input.modelProfile) ||
         typeof input.taskId !== 'string' || !/^[A-Za-z0-9][A-Za-z0-9_-]{0,63}$/u.test(input.taskId)) fail('INVALID_REQUEST');
     text(input.prompt, textLimit); text(input.expectedText, textLimit);
     for (const key of ['workspace', 'artifactsRoot', 'piCmd']) localAbsolute(input[key]);
-    const workspace = disposableWorkspace(input.workspace);
+    const workspace = disposableWorkspace(input.workspace, input.engineering);
     const artifactsRoot = canonicalFuture(resolve(input.artifactsRoot));
     if (inside(repository, artifactsRoot) || inside(workspace, artifactsRoot) ||
         inside(artifactsRoot, workspace) || inGitTree(artifactsRoot) || dirname(artifactsRoot) === artifactsRoot) fail('INVALID_REQUEST');
@@ -121,8 +126,10 @@ export function validateRequest(input) {
       if (!Number.isSafeInteger(value) || value < 1 || value > max) fail('INVALID_REQUEST');
     }
     // Validate the trusted launcher before acquiring or spawning anything.
-    windowsLaunchSpec({ piCmd: input.piCmd, cwd: workspace, profile: 'isolated' });
-    return { ...input, workspace, artifactsRoot, driver: { ...options } };
+    windowsLaunchSpec({ piCmd: input.piCmd, cwd: workspace,
+      profile: engineering ? 'engineering' : 'isolated', engineering: input.engineering });
+    return { ...input, workspace, artifactsRoot, driver: { ...options },
+      ...(engineering ? { engineering: { ...input.engineering } } : {}) };
   } catch { fail('INVALID_REQUEST'); }
 }
 export function loadRequest(path) {
@@ -148,6 +155,9 @@ export async function runRole(input, { acquire = acquirePiLock, notify = () => {
   const observed = { stateCorrelated: false, modelAvailable: false, promptAccepted: false,
     settled: false, aborted: false, assistantError: false, markerMatched: false, responseStarted: false,
     eventCount: 0, diagnosticBytes: 0 };
+  const harmlessTests = new Set();
+  if (config.engineering) observed.engineering = { toolStarts: 0, toolEnds: 0,
+    harmlessTestStarted: false, harmlessTestSucceeded: false };
   let lease, driver, termination = null, released = false, launchAttempted = false;
   let state = 'starting', sequence = 0, journalFailed = false, textSeen = '', finalMessageSeen = false;
   let cancelRequested = false, controlReady = false, watcher, polling = null;
@@ -203,12 +213,13 @@ export async function runRole(input, { acquire = acquirePiLock, notify = () => {
     record('lock_acquired');
     if (journalFailed) fail('PERSISTENCE_FAILED');
     // Revalidate immediately before launch; marker/paths are not a sandbox.
-    disposableWorkspace(config.workspace);
+    disposableWorkspace(config.workspace, config.engineering);
     const { settlementTimeoutMs = 120_000, ...driverOptions } = config.driver;
     driver = await phase(() => {
       launchAttempted = true;
       return lease.launch({ piCmd: config.piCmd, cwd: config.workspace,
-        profile: 'isolated', ...driverOptions });
+        profile: config.modelProfile === 'configured-engineering' ? 'engineering' : 'isolated',
+        ...(config.engineering ? { engineering: config.engineering } : {}), ...driverOptions });
     });
     // A request during asynchronous bootstrap cannot be lost before binding.
     if (cancelRequested || errors.size) void driver.cancel().catch(() => {});
@@ -221,6 +232,17 @@ export async function runRole(input, { acquire = acquirePiLock, notify = () => {
     });
     driver.on('event', event => {
       observed.eventCount++;
+      if (config.engineering && ['read', 'edit', 'write', 'bash'].includes(event.toolName)) {
+        if (event.type === 'tool_execution_start') {
+          observed.engineering.toolStarts++;
+          if (event.toolName === 'bash' && event.args?.command === 'node --test' && typeof event.toolCallId === 'string') {
+            harmlessTests.add(event.toolCallId); observed.engineering.harmlessTestStarted = true;
+          }
+        } else if (event.type === 'tool_execution_end') {
+          observed.engineering.toolEnds++;
+          if (harmlessTests.delete(event.toolCallId) && event.isError === false) observed.engineering.harmlessTestSucceeded = true;
+        }
+      }
       if (!observed.responseStarted && event.type === 'message_update' &&
           event.assistantMessageEvent?.type === 'text_delta') {
         observed.responseStarted = true;
@@ -256,7 +278,8 @@ export async function runRole(input, { acquire = acquirePiLock, notify = () => {
     observed.modelAvailable = typeof response.data?.model?.id === 'string' && response.data.model.id.length > 0;
     if (!observed.stateCorrelated || !observed.modelAvailable || response.data?.isStreaming !== false) fail('MODEL_OR_STATE_INVALID');
     record('state_observed', { modelAvailable: true });
-    const result = await phase(() => driver.promptAndWait(config.prompt, { timeoutMs: settlementTimeoutMs }));
+    const prompt = config.engineering ? `${engineeringInstructions}\n\n${config.prompt}` : config.prompt;
+    const result = await phase(() => driver.promptAndWait(prompt, { timeoutMs: settlementTimeoutMs }));
     observed.promptAccepted = result.response.success === true && result.response.data?.disposition === 'started';
     observed.settled = result.settled.type === 'agent_settled';
     observed.aborted = result.settled.aborted === true;

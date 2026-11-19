@@ -4,6 +4,7 @@ import { EventEmitter } from 'node:events';
 import { statSync } from 'node:fs';
 import { win32 } from 'node:path';
 import { randomUUID } from 'node:crypto';
+import { engineeringEnvironment, validateEngineeringWorkspace } from './engineering-workspace.mjs';
 
 export class DriverError extends Error {
   constructor(code, message, response) {
@@ -21,14 +22,15 @@ function positiveInteger(value, name) {
   return value;
 }
 
-// Only these two literal command lines can reach cmd.exe. All RPC input goes
+// Only these literal command lines can reach cmd.exe. All RPC input goes
 // through stdin. Reject shell syntax even in the trusted launcher's path.
 const COMMANDS = Object.freeze({
   default: '""%DEVOUT_PI_CMD%" --mode rpc --no-session"',
   isolated: '""%DEVOUT_PI_CMD%" --mode rpc --no-session --no-tools --no-extensions --no-mcp --no-skills --no-prompt-templates --no-context-files --no-approve"',
+  engineering: '""%DEVOUT_PI_CMD%" --mode rpc --no-session --tools read,edit,write,bash --no-extensions --no-mcp --no-skills --no-prompt-templates --no-context-files --no-approve"',
 });
 
-export function windowsLaunchSpec({ piCmd, cwd, profile = 'default' }) {
+export function windowsLaunchSpec({ piCmd, cwd, profile = 'default', engineering }) {
   if (typeof piCmd !== 'string' || !win32.isAbsolute(piCmd) ||
       !piCmd.toLowerCase().endsWith('.cmd') || /["%!&|<>^()\r\n\0]/u.test(piCmd)) {
     throw new TypeError('piCmd must be an absolute .cmd path without shell metacharacters');
@@ -37,22 +39,24 @@ export function windowsLaunchSpec({ piCmd, cwd, profile = 'default' }) {
   if (!statSync(piCmd).isFile() || !statSync(cwd).isDirectory()) {
     throw new TypeError('piCmd and cwd must exist');
   }
+  if (profile === 'engineering') cwd = validateEngineeringWorkspace(cwd, engineering);
+  else if (engineering !== undefined) throw new TypeError('Engineering policy requires engineering profile');
   return {
     file: win32.join(process.env.SystemRoot || 'C:\\Windows', 'System32', 'cmd.exe'),
     args: ['/d', '/s', '/v:off', '/c', COMMANDS[profile]],
     options: {
-      cwd, env: { ...process.env, DEVOUT_PI_CMD: piCmd },
+      cwd, env: { ...(profile === 'engineering' ? engineeringEnvironment() : process.env), DEVOUT_PI_CMD: piCmd },
       shell: false, windowsVerbatimArguments: true, windowsHide: true,
       stdio: ['pipe', 'pipe', 'pipe'],
     },
   };
 }
 
-export function startPi({ piCmd, cwd, profile = 'default', ...transportOptions }) {
+export function startPi({ piCmd, cwd, profile = 'default', engineering, ...transportOptions }) {
   if (process.platform !== 'win32') throw new Error('startPi requires native Windows');
   // Validate options before creating a process that could otherwise be orphaned.
   const limits = validateOptions(transportOptions);
-  const spec = windowsLaunchSpec({ piCmd, cwd, profile });
+  const spec = windowsLaunchSpec({ piCmd, cwd, profile, engineering });
   const { child, processTree } = spawnManagedPi(spec);
   return new PiDriver(child, { ...limits, processTree });
 }

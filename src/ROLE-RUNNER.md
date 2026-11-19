@@ -1,4 +1,4 @@
-# Role Runner temporário — M01-T04/T05 / Slice 1
+# Role Runner temporário — M01-T04/T05 e perfil M02-T01
 
 ```powershell
 node src/role-runner.mjs run --config "C:\caminho-local\request.json"
@@ -14,6 +14,10 @@ Somente `role: "test"` está autorizado neste Slice. Não representa implementad
 revisor ou corretor de uma task real. Gates desses papéis pertencem ao Slice 2;
 cancelamento local entre invocações está descrito abaixo (M01-T05). O procedimento
 OpenClaw da M01-T06 está em [`OPENCLAW.md`](OPENCLAW.md).
+A M02-T01 adiciona somente o perfil opt-in `configured-engineering` ao mesmo papel
+`test`: admite Git fictício preparado e ferramentas de programação, sem automatizar
+papéis de tasks. Esquema adicional, controles, smoke e limites em
+[`ENGINEERING.md`](ENGINEERING.md). As regras desta seção descrevem o perfil M01.
 
 ## Solicitação local (schemaVersion 1)
 
@@ -40,7 +44,8 @@ Exemplo de formato, com caminhos reais a serem preparados pelo controlador human
 
 - JSON UTF-8 sem BOM, até 256 KiB; campos desconhecidos, tipos errados, flags extras
   e versões diferentes são recusados **antes** de criar Pi ou diretório de run.
-  Todos os campos acima são obrigatórios exceto `driver`.
+  Todos os campos acima são obrigatórios exceto `driver`. Para o perfil de engenharia,
+  também é obrigatório o objeto fechado `engineering`, proibido no perfil M01.
 - `taskId`: metadado local, 1–64 caracteres alfanuméricos, `_` ou `-`, começando por
   alfanumérico. Não é prova de task aprovada, não seleciona entrada oficial e não
   recebe resultado `completed`. Não colocar segredos em IDs.
@@ -58,7 +63,8 @@ Exemplo de formato, com caminhos reais a serem preparados pelo controlador human
   restritas à conta, sem manipulação concorrente hostil. Não usar UNC/device paths.
 - `piCmd`: launcher `.cmd` **confiável**, existente, absoluto, validado pelo Driver,
   sem metacaracteres de shell. Não é fragmento de comando nem parâmetro de modelo.
-- `modelProfile`: somente `configured-isolated`. Usa o modelo/provedor **já
+- `modelProfile`: `configured-isolated` no perfil M01 (a alternativa explícita é
+  `configured-engineering`, conforme o guia acima). Usa o modelo/provedor **já
   configurado no Pi**, sem alterar credenciais, selecionar modelo arbitrário por
   RPC ou persistir sua identificação. `get_state` deve confirmar modelo disponível
   e ausência de streaming anterior. O perfil mapeia para o launcher fixo `isolated`

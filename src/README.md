@@ -1,7 +1,9 @@
-# Infraestrutura Slice 1 — Pi Driver, exclusividade e Role Runner
+# Pi Driver, exclusividade e Role Runner — Slice 1 e perfil M02-T01
 
 CLI temporária, solicitação local e evidências por execução: [`ROLE-RUNNER.md`](ROLE-RUNNER.md)
 (M01-T04/T05; somente papel de teste, com cancelamento entre invocações). O Runner adquire a lease antes de lançar Pi.
+Perfil opt-in de engenharia em Git fictício, ferramentas e limites Windows:
+[`ENGINEERING.md`](ENGINEERING.md) (M02-T01; não habilita ainda os papéis de workflow).
 Disparo/acompanhamento pelo Gateway real no Windows, incluindo duplicidade, cancelamento,
 falhas e limites de restart: [`OPENCLAW.md`](OPENCLAW.md) (M01-T06, opt-in separado).
 Aquisição global, uso com Driver, testes concorrentes e procedimento de reconciliação:
@@ -24,6 +26,8 @@ npm.cmd --prefix src run test:cancel
 npm.cmd --prefix src run test:runner
 # Runner assíncrono + controle de cancelamento em outra invocação (Pi real):
 npm.cmd --prefix src run test:runner-cancel
+# Perfil de engenharia: edição + node --test em Git fictício, opt-in separado:
+npm.cmd --prefix src run test:engineering
 ```
 
 Não instala pacotes nem exige Gateway OpenClaw. Testes automatizados usam processos
@@ -94,6 +98,9 @@ try {
   ao Job Object e lançar o `.cmd`. Rejeita falha de lançamento/supervisão.
   Não significa que o protocolo já respondeu: usar `getState` para comprovar comunicação.
   Aceita também os prazos de processo documentados abaixo.
+  `profile: 'engineering'` exige `engineering: { baseline, branch, testPolicy }` e
+  valida o Git descartável antes de lançar; detalhes em [`ENGINEERING.md`](ENGINEERING.md).
+  Os perfis existentes `default` e `isolated` não mudam.
 - `getState({ timeoutMs }?)` equivale a `command('get_state', {}, options)`.
 - `prompt(message, { timeoutMs }?)` retorna **somente a resposta de aceitação**.
   Para gerenciar eventos manualmente, inscrever-se antes de chamar. Não misturar essa
