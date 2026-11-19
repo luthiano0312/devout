@@ -4,7 +4,7 @@
 
 **Rastreabilidade do encerramento:** M01-T01–M01-T06 constam como `concluída` no [registro oficial](../registro.md); commits funcionais, commits de metadados e evidências conferidos no Git até `35c1834906709628fee7889ca263c08ff7a9893e`. Baseline confirmado: `c771c4b39a34716f15728c1e0d5b2596e776bc41`.
 
-**Local do arquivo:** `docs_devout/03-execucao/planos/marco-M01.md` (antes `docs_devout/plano.md`). O conteúdo de planejamento abaixo foi preservado como histórico, inclusive pré-condições e caminhos da época; não representa plano ativo nem pendências atuais do M01. Não há plano ativo; M02 ainda será planejado e Slice 2 não foi iniciado. O contrato MVP completo permanece parcialmente implementado.
+**Local do arquivo:** `docs_devout/03-execucao/planos/marco-M01.md` (antes `docs_devout/plano.md`). O conteúdo de planejamento abaixo foi preservado como histórico, inclusive pré-condições e caminhos da época; não representa plano ativo nem pendências atuais do M01. O plano vigente é o [M02 / Slice 2](../../plano.md), aprovado em 2026-11-19; consultar o [registro oficial](../registro.md) para seu progresso e bloqueios. O contrato MVP completo permanece parcialmente implementado.
 
 **Data:** 2026-11-17.  
 **Repositório:** `luthiano0312/devout`; branch `main` consultada.  

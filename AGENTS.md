@@ -15,7 +15,7 @@
 - **Procedimentos:** `docs_devout/how-to/`; diagnóstico em `docs_devout/how-to/diagnosticar-ambiente-windows.md`.
 - **Plano ativo:** `docs_devout/plano.md` — M02 (Slice 2), aprovado em 2026-11-19; execução somente depois de confirmar commit de baseline.
 - **Plano M01 encerrado:** `docs_devout/03-execucao/planos/marco-M01.md`; preserva as seis tasks e o planejamento original como histórico, não autoriza novas execuções.
-- **Registro oficial de execução:** `docs_devout/03-execucao/registro.md` (M01-T01–M01-T06 concluídas; M02-T01–M02-T07 não iniciadas; preservar histórico).
+- **Registro oficial de execução:** `docs_devout/03-execucao/registro.md` (M01-T01–M01-T06 concluídas; consultar este registro para os estados atuais de M02-T01–M02-T07 e preservar o histórico).
 - **Seleção de fontes para revisão independente:** `docs_devout/03-execucao/fontes-revisao.json` (M01 histórico preservado e seleção M02-T01 preparada; as demais M02 exigem recorte explícito antes da revisão).
 - **Relatórios e revisões de tasks:** `docs_devout/03-execucao/achados/`.
 - **Planos encerrados:** `docs_devout/03-execucao/planos/`.

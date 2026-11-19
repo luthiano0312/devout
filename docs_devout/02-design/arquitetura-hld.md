@@ -1,6 +1,6 @@
 # Arquitetura de alto nível — Devout
 
-**Situação:** **Slice 1 implementado, revisado e encerrado no M01**; **Slice 2 ainda não iniciado**. O contrato MVP completo permanece **parcialmente implementado**, sem os fluxos dos Slices 2, 3 e 4. Esta visão resume e aponta para o [contrato MVP v1.0](contrato-orquestracao-mvp.md), fonte do comportamento detalhado. O [plano M01 arquivado](../03-execucao/planos/marco-M01.md) preserva o recorte da entrega concluída; não há plano ativo enquanto M02 aguarda planejamento.
+**Situação:** **Slice 1 implementado, revisado e encerrado no M01**; **Slice 2 ainda não iniciado**. O contrato MVP completo permanece **parcialmente implementado**, sem os fluxos dos Slices 2, 3 e 4. Esta visão resume e aponta para o [contrato MVP v1.0](contrato-orquestracao-mvp.md), fonte do comportamento detalhado. O [plano M01 arquivado](../03-execucao/planos/marco-M01.md) preserva o recorte da entrega concluída; o [plano M02 ativo](../plano.md), aprovado em 2026-11-19, delimita o Slice 2, com execução condicionada à confirmação do baseline e dos gates da task. Consultar o [registro oficial](../03-execucao/registro.md) para o progresso.
 
 ## Contexto e topologia
 

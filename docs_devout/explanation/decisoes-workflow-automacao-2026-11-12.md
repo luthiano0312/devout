@@ -61,7 +61,7 @@ O **arquivo central é um índice** com identificações, resumos, links, ordem 
 
 ### Estrutura de referência aprovada conceitualmente
 
-**Exemplo conceitual, não mapa do checkout atual.** No `devout`, o [plano M01 encerrado](../03-execucao/planos/marco-M01.md) preserva o planejamento histórico; consultar o [registro](../03-execucao/registro.md) para progresso e o [AGENTS.md](../../AGENTS.md) para o mapa atual. Não há plano ativo enquanto M02 aguarda planejamento. A migração para arquivos individuais por task não integra o Slice 1.
+**Exemplo conceitual, não mapa do checkout atual.** No `devout`, o [plano M01 encerrado](../03-execucao/planos/marco-M01.md) preserva o planejamento histórico; consultar o [registro](../03-execucao/registro.md) para progresso e o [AGENTS.md](../../AGENTS.md) para o mapa atual. O [plano M02 ativo](../plano.md), aprovado em 2026-11-19, mantém as tasks no arquivo único vigente. A migração para arquivos individuais por task não integra o M01 nem o M02.
 
 ```text
 docs/03-execucao/

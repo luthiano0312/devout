@@ -3,7 +3,7 @@
 **Versão:** 1.0 — decisões consolidadas em 16/11/2026  
 **Situação:** **contrato de desenho aprovado, parcialmente implementado e ainda não validado integralmente**. O Slice 1 foi implementado, revisado e encerrado no M01; o Slice 2 ainda não foi iniciado e os Slices 3 e 4 permanecem futuros.
 
-**Próxima etapa documental:** planejar M02 mediante aprovação humana, sem plano ativo neste intervalo. A continuidade do MVP (Etapa B) permanece restrita a **Windows nativo**, com **uma task e um repositório descartável**.
+**Planejamento vigente:** o [plano M02 ativo](../plano.md) foi aprovado em 2026-11-19 e delimita o Slice 2; sua execução exige confirmação do baseline e dos gates da task. A continuidade do MVP (Etapa B) permanece restrita a **Windows nativo**, com **uma task e um repositório descartável**.
 
 **Rastreabilidade de progresso:** [plano M01 arquivado](../03-execucao/planos/marco-M01.md) e [registro oficial](../03-execucao/registro.md). Esta atualização de situação não altera as decisões, requisitos ou etiquetas originais abaixo; pontos de validação devem ser confrontados com as evidências do slice correspondente.
 
@@ -384,4 +384,4 @@ O repositório real ainda **não implementa** essas decisões de automação. Em
 6. **Recuperação técnica:** condições objetivas para classificar tentativa de implementação como descartável, arquivar evidências e criar novo workspace sem perda de alterações preexistentes.
 7. **Modelos/recursos:** perfis reais, limites de custo/tempo e política de notificações detalhada (todos os achados devem ser reportados). Não assumir economia de modelos antes de medir.
 
-**Situação após M01:** a infraestrutura do **Slice 1** foi implementada e revisada, com evidências e limites vinculados no registro oficial. A próxima ação é o planejamento aprovado do M02, não a execução automática do Slice 2. O aceite completo do MVP permanece pendente; este encerramento documental não autoriza alterações nas skills, Git Gateway ou repositório importante.
+**Situação após M01:** a infraestrutura do **Slice 1** foi implementada e revisada, com evidências e limites vinculados no registro oficial. O planejamento do M02 foi aprovado em 2026-11-19 e está no [plano ativo](../plano.md); sua execução depende da confirmação do baseline e dos gates da task, sem avanço automático. O aceite completo do MVP permanece pendente; este encerramento documental não autoriza alterações nas skills, Git Gateway ou repositório importante.
