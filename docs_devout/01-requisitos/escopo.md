@@ -20,7 +20,7 @@ Uma task aprovada por vez em repositório descartável: implementador → reviso
 
 **Slice 1 implementado, revisado e encerrado:** infraestrutura OpenClaw → Role Runner temporário → Pi Driver → Pi RPC: JSONL, eventos, controle de processos, término verificado, exclusividade, cancelamento e integração Windows. Tasks e critérios originais estão preservados no [plano M01 arquivado](../03-execucao/planos/marco-M01.md); conclusões e evidências constam no [registro oficial](../03-execucao/registro.md).
 
-**Slice 2 planejado e aprovado no M02 em 2026-11-19, ainda sem implementação entregue.** O [plano M02 ativo](../plano.md) delimita sua execução, condicionada à confirmação do baseline e dos gates da task. O contrato MVP completo está **parcialmente implementado**; os Slices 3 e 4 permanecem futuros. O progresso oficial consta no [registro](../03-execucao/registro.md).
+**Slice 2 aprovado no M02 em 2026-11-19 e parcialmente implementado:** a M02-T01, perfil controlado de engenharia em repositório Git fictício, foi concluída e integrada à `main`. O fluxo automatizado de implementação e revisão em duas fases ainda não foi entregue. O [plano M02 ativo](../plano.md) delimita sua execução, condicionada à confirmação do baseline e dos gates da task. O contrato MVP completo está **parcialmente implementado**; os Slices 3 e 4 permanecem futuros. O progresso oficial consta no [registro](../03-execucao/registro.md).
 
 Revisão automatizada, gates de papéis, transições oficiais, correção/reauditoria e recuperação de task pertencem aos slices seguintes. No Slice 1, o Runner não atualiza o registro nem aprova tasks.
 

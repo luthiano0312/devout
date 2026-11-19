@@ -1,6 +1,6 @@
 # Arquitetura de alto nível — Devout
 
-**Situação:** **Slice 1 implementado, revisado e encerrado no M01**; **Slice 2 ainda não iniciado**. O contrato MVP completo permanece **parcialmente implementado**, sem os fluxos dos Slices 2, 3 e 4. Esta visão resume e aponta para o [contrato MVP v1.0](contrato-orquestracao-mvp.md), fonte do comportamento detalhado. O [plano M01 arquivado](../03-execucao/planos/marco-M01.md) preserva o recorte da entrega concluída; o [plano M02 ativo](../plano.md), aprovado em 2026-11-19, delimita o Slice 2, com execução condicionada à confirmação do baseline e dos gates da task. Consultar o [registro oficial](../03-execucao/registro.md) para o progresso.
+**Situação:** **Slice 1 implementado, revisado e encerrado no M01**; **Slice 2 parcialmente implementado, com M02-T01 concluída e integrada à `main`**. O contrato MVP completo permanece **parcialmente implementado**, sem o fluxo automatizado de implementação/revisão do Slice 2 nem os fluxos dos Slices 3 e 4. Esta visão resume e aponta para o [contrato MVP v1.0](contrato-orquestracao-mvp.md), fonte do comportamento detalhado. O [plano M01 arquivado](../03-execucao/planos/marco-M01.md) preserva o recorte da entrega concluída; o [plano M02 ativo](../plano.md), aprovado em 2026-11-19, delimita o Slice 2, com execução condicionada à confirmação do baseline e dos gates da task. Consultar o [registro oficial](../03-execucao/registro.md) para o progresso.
 
 ## Contexto e topologia
 
@@ -28,7 +28,7 @@ Não há supervisor Node residente, serviço HTTP permanente ou Named Pipe no MV
 | Pi Agent | Produzir artefatos e avaliações; resultado declarado é candidato | Seções 3 e 6 |
 | Validadores | Conferir condições objetivas; não substituir revisão técnica independente | Seções 3 e 7–8 |
 
-A topologia e a tabela descrevem o desenho aprovado completo, não apenas funcionalidades prontas. No Slice 1, o OpenClaw dispara e acompanha o Runner para execução técnica com papel de teste. As duas fases de revisão no mesmo Pi revisor, os gates de papéis, os validadores de workflow e as transições oficiais pertencem aos slices seguintes e ainda não foram implementados.
+A topologia e a tabela descrevem o desenho aprovado completo, não apenas funcionalidades prontas. No Slice 1, o OpenClaw dispara e acompanha o Runner para execução técnica com papel de teste. A M02-T01 acrescentou a esse mesmo papel um [perfil controlado de engenharia em Git fictício](../../src/ENGINEERING.md), sem habilitar implementador/revisor/corretor ou transições oficiais. As duas fases de revisão no mesmo Pi revisor, os gates de papéis, os validadores de workflow e as transições oficiais pertencem aos slices seguintes e ainda não foram implementados.
 
 ## Processos, estado e persistência
 

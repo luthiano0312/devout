@@ -2,7 +2,7 @@
 
 ## Sobre o projeto
 
-`devout` implementa, de forma incremental, um orquestrador de desenvolvimento de software. OpenClaw coordena as execuções e Pi Agent realiza operações de programação por RPC. O ambiente inicial é **Windows nativo**. O **M01 / Slice 1** (Driver, Runner temporário, processos e integração) está implementado, revisado e encerrado. O **M02 / Slice 2** foi planejado e aprovado em 2026-11-19, mas a implementação ainda não começou; o contrato MVP completo permanece parcialmente implementado.
+`devout` implementa, de forma incremental, um orquestrador de desenvolvimento de software. OpenClaw coordena as execuções e Pi Agent realiza operações de programação por RPC. O ambiente inicial é **Windows nativo**. O **M01 / Slice 1** (Driver, Runner temporário, processos e integração) está implementado, revisado e encerrado. O **M02 / Slice 2**, aprovado em 2026-11-19, está parcialmente implementado: a **M02-T01** (perfil de engenharia em Git fictício) foi concluída e integrada à `main`. O contrato MVP completo permanece parcialmente implementado; consultar o registro oficial para o progresso das demais tasks.
 
 ## Mapa de caminhos
 
@@ -15,7 +15,7 @@
 - **Procedimentos:** `docs_devout/how-to/`; diagnóstico em `docs_devout/how-to/diagnosticar-ambiente-windows.md`.
 - **Plano ativo:** `docs_devout/plano.md` — M02 (Slice 2), aprovado em 2026-11-19; execução somente depois de confirmar commit de baseline.
 - **Plano M01 encerrado:** `docs_devout/03-execucao/planos/marco-M01.md`; preserva as seis tasks e o planejamento original como histórico, não autoriza novas execuções.
-- **Registro oficial de execução:** `docs_devout/03-execucao/registro.md` (M01-T01–M01-T06 concluídas; consultar este registro para os estados atuais de M02-T01–M02-T07 e preservar o histórico).
+- **Registro oficial de execução:** `docs_devout/03-execucao/registro.md` (M01-T01–M01-T06 e M02-T01 concluídas; consultar este registro para os estados atuais das demais tasks e preservar o histórico).
 - **Seleção de fontes para revisão independente:** `docs_devout/03-execucao/fontes-revisao.json` (M01 histórico preservado e seleção M02-T01 preparada; as demais M02 exigem recorte explícito antes da revisão).
 - **Relatórios e revisões de tasks:** `docs_devout/03-execucao/achados/`.
 - **Planos encerrados:** `docs_devout/03-execucao/planos/`.
@@ -34,13 +34,13 @@ O contrato define o comportamento do MVP completo, ainda parcialmente implementa
 
 Fora da avaliação independente, carregar primeiro a task M02 atual em `docs_devout/plano.md` e apenas as fontes pertinentes. O plano M01 arquivado não é plano vigente; não iniciar task sem baseline M02 confirmado. Na avaliação independente, preparar primeiro a entrada filtrada conforme abaixo, sem abrir o plano inteiro. Consultar os ADRs antes de propor mudanças arquiteturais relevantes. Por padrão, ler somente `docs_devout/02-design/adr/*.md` (ativos), sem busca recursiva; `docs_devout/02-design/adr/archive/` (quando houver) fica reservado à investigação histórica ou revisão arquitetural ampla. Não carregar `docs_devout/explanation/archive/` em massa; rascunhos e briefings não substituem o contrato aprovado.
 
-As revisões M01-T01–M01-T06 estão finalizadas. Suas seleções preservadas usam `docs_devout/plano.md` no checkout **anterior ao arquivamento** (referência: `35c1834906709628fee7889ca263c08ff7a9893e`); não executar comandos M01 no checkout atual nem reutilizar essas entradas com o novo plano. A configuração inclui a seleção M02-T01, validada na preparação do baseline. Para uma nova revisão independente, a entrada deve ser preparada antes de relatos, Observações, diffs irrestritos ou documentos mistos. Exemplo histórico M01-T06 (demais seleções M01 trocavam somente o ID):
+As revisões M01-T01–M01-T06 estão finalizadas. Suas seleções preservadas usam `docs_devout/plano.md` no checkout **anterior ao arquivamento** (referência: `35c1834906709628fee7889ca263c08ff7a9893e`); não executar comandos M01 no checkout atual nem reutilizar essas entradas com o novo plano. A configuração preserva a seleção M02-T01, cuja revisão já foi finalizada; a task está concluída e não deve ser reaberta. A entrega e a conclusão estão integradas à `main` pelos commits `04ada41ac9727da535751f1c5a8be36d83bd66df` e `cf1d0701a9e268a327376925aa9ed94de70084e7`, respectivamente. Para uma nova revisão independente, a entrada deve ser preparada antes de relatos, Observações, diffs irrestritos ou documentos mistos. Exemplo histórico M01-T06 (demais seleções M01 trocavam somente o ID):
 
 ```powershell
 python .agents/skills/implement/scripts/review_inputs.py docs_devout/03-execucao/registro.md M01-T06 --sources docs_devout/03-execucao/fontes-revisao.json
 ```
 
-Exemplo atual, revisão manual futura de M02-T01 após implementação, em conversa independente:
+Exemplo histórico da entrada usada na revisão independente da M02-T01; não executar como nova revisão da task concluída:
 
 ```powershell
 python .agents/skills/implement/scripts/review_inputs.py docs_devout/03-execucao/registro.md M02-T01 --sources docs_devout/03-execucao/fontes-revisao.json

@@ -1,7 +1,7 @@
 # Contrato de orquestração MVP — OpenClaw + Pi Agent
 
 **Versão:** 1.0 — decisões consolidadas em 16/11/2026  
-**Situação:** **contrato de desenho aprovado, parcialmente implementado e ainda não validado integralmente**. O Slice 1 foi implementado, revisado e encerrado no M01; o Slice 2 ainda não foi iniciado e os Slices 3 e 4 permanecem futuros.
+**Situação:** **contrato de desenho aprovado, parcialmente implementado e ainda não validado integralmente**. O Slice 1 foi implementado, revisado e encerrado no M01; o Slice 2 está parcialmente implementado, com a M02-T01 (perfil controlado de engenharia em Git fictício) concluída e integrada à `main`. O fluxo automatizado de implementação/revisão do Slice 2 ainda não foi entregue, e os Slices 3 e 4 permanecem futuros.
 
 **Planejamento vigente:** o [plano M02 ativo](../plano.md) foi aprovado em 2026-11-19 e delimita o Slice 2; sua execução exige confirmação do baseline e dos gates da task. A continuidade do MVP (Etapa B) permanece restrita a **Windows nativo**, com **uma task e um repositório descartável**.
 
