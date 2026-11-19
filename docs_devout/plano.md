@@ -28,8 +28,6 @@ O plano de M01 está arquivado e este plano M02 ocupa `docs_devout/plano.md` ap�
 
 **Condições de entrada externas:** Windows nativo com Node, Python, OpenClaw e Pi operacional; provedores previamente configurados; projetos/arquivos inteiramente fictícios em área descartável; Git local funcional. Nenhum teste pode exigir segredos, credenciais GitHub remotas, acesso à produção, alterações de configuração global do OpenClaw ou ambientes compartilhados. Os testes que dependem de Gateway/Pi reais serão opt-in e documentarão os requisitos locais, sem assumir sucesso antes de executá-los.
 
-**Preparação do baseline de execução do próprio Devout, antes da primeira task:** este plano aprovado deve ser instalado em `docs_devout/plano.md`, as sete linhas M02 devem ser acrescentadas ao registro (preservando M01) e `AGENTS.md` deve refletir o mapa vigente. A configuração `docs_devout/03-execucao/fontes-revisao.json` deve conter um recorte previamente validado para a revisão manual da M02-T01; outras tasks exigem seleção explícita e versionada antes da respectiva revisão, sem que o próprio agente avaliado amplie sua seleção. As seleções históricas M01 permanecem como histórico, sem servirem de fallback para M02. Não editar silenciosamente as skills. O baseline exige commit inicial autorizado abrangendo plano, registro, mapa e preparação pertinente de fontes. A execução da M02-T01 só fica apta depois da confirmação desse commit.
-
 ## Ordem recomendada e dependências obrigatórias
 
 A ordenação é uma sugestão de execução **sequencial**, não autorização de paralelismo. As dependências abaixo são apenas as que resultam do consumo real de artefatos.

@@ -1,6 +1,217 @@
 {
   "version": 1,
   "tasks": {
+    "M02-T02": {
+      "task": {
+        "path": "docs_devout/plano.md",
+        "selector": {
+          "heading": "### M02-T02 — Pré-validação de task aprovada e baseline Git"
+        }
+      },
+      "common": [
+        {
+          "path": "docs_devout/plano.md",
+          "selector": { "start": null, "end_before": "## Recorte e fontes" }
+        },
+        {
+          "path": "docs_devout/plano.md",
+          "selector": { "heading": "## Recorte e fontes" }
+        },
+        {
+          "path": "docs_devout/plano.md",
+          "selector": { "heading": "## Ordem recomendada e dependências obrigatórias" }
+        },
+        {
+          "path": "AGENTS.md",
+          "selector": { "heading": "## Convenções e limites atuais" }
+        },
+        {
+          "path": "AGENTS.md",
+          "selector": { "heading": "## Antes de implementar uma task" }
+        }
+      ],
+      "sources": [
+        {
+          "path": "docs_devout/plano.md",
+          "sections": [
+            {
+              "selector": { "start": null, "end_before": "### M02-T01 — Perfil de Pi para programação em repositório fictício" },
+              "phase": "initial"
+            },
+            {
+              "selector": { "start": "### M02-T01 — Perfil de Pi para programação em repositório fictício", "end_before": "### M02-T02 — Pré-validação de task aprovada e baseline Git" },
+              "phase": "deferred"
+            },
+            {
+              "selector": { "start": "### M02-T02 — Pré-validação de task aprovada e baseline Git", "end_before": "### M02-T03 — Role Runner implementador e validação de entrega" },
+              "phase": "initial"
+            },
+            {
+              "selector": { "start": "### M02-T03 — Role Runner implementador e validação de entrega", "end_before": null },
+              "phase": "deferred"
+            }
+          ]
+        },
+        {
+          "path": "AGENTS.md",
+          "sections": [
+            {
+              "selector": { "start": null, "end_before": "## Diagnóstico e testes" },
+              "phase": "initial"
+            },
+            {
+              "selector": { "start": "## Diagnóstico e testes", "end_before": "## Antes de implementar uma task" },
+              "phase": "deferred"
+            },
+            {
+              "selector": { "start": "## Antes de implementar uma task", "end_before": null },
+              "phase": "initial"
+            }
+          ]
+        },
+        {
+          "path": "docs_devout/02-design/contrato-orquestracao-mvp.md",
+          "sections": [
+            {
+              "selector": { "start": null, "end_before": "## 5. Processos, cancelamento e exclusividade" },
+              "phase": "initial"
+            },
+            {
+              "selector": { "start": "## 5. Processos, cancelamento e exclusividade", "end_before": "## 6. Três níveis de estado e resultados" },
+              "phase": "deferred"
+            },
+            {
+              "selector": { "start": "## 6. Três níveis de estado e resultados", "end_before": "## 8. Persistência operacional e consistência" },
+              "phase": "initial"
+            },
+            {
+              "selector": { "start": "## 8. Persistência operacional e consistência", "end_before": "## 10. Critérios de aceite e plano de testes" },
+              "phase": "deferred"
+            },
+            {
+              "selector": { "start": "## 10. Critérios de aceite e plano de testes", "end_before": "## 12. Diferenças verificadas na implementação atual das skills" },
+              "phase": "initial"
+            },
+            {
+              "selector": { "start": "## 12. Diferenças verificadas na implementação atual das skills", "end_before": null },
+              "phase": "deferred"
+            }
+          ]
+        },
+        {
+          "path": "docs_devout/02-design/arquitetura-hld.md",
+          "sections": [
+            {
+              "selector": { "start": null, "end_before": "## Validação realizada e limites pendentes" },
+              "phase": "initial"
+            },
+            {
+              "selector": { "start": "## Validação realizada e limites pendentes", "end_before": null },
+              "phase": "deferred"
+            }
+          ]
+        },
+        {
+          "path": "docs_devout/02-design/adr/0001-runner-temporario-windows-rpc.md",
+          "sections": [
+            {
+              "selector": { "start": null, "end_before": "## Contexto" },
+              "phase": "initial"
+            },
+            {
+              "selector": { "start": "## Contexto", "end_before": "## Decisão" },
+              "phase": "deferred"
+            },
+            {
+              "selector": { "start": "## Decisão", "end_before": null },
+              "phase": "initial"
+            }
+          ]
+        },
+        {
+          "path": "docs_devout/02-design/adr/0002-pi-sequencial-exclusivo.md",
+          "sections": [
+            {
+              "selector": { "start": null, "end_before": "## Contexto" },
+              "phase": "initial"
+            },
+            {
+              "selector": { "start": "## Contexto", "end_before": "## Decisão" },
+              "phase": "deferred"
+            },
+            {
+              "selector": { "start": "## Decisão", "end_before": null },
+              "phase": "initial"
+            }
+          ]
+        },
+        {
+          "path": "docs_devout/02-design/adr/0003-isolamento-forte-adiado-no-mvp.md",
+          "sections": [
+            {
+              "selector": { "start": null, "end_before": "## Contexto" },
+              "phase": "initial"
+            },
+            {
+              "selector": { "start": "## Contexto", "end_before": "## Decisão" },
+              "phase": "deferred"
+            },
+            {
+              "selector": { "start": "## Decisão", "end_before": null },
+              "phase": "initial"
+            }
+          ]
+        },
+        {
+          "path": "src/package.json",
+          "sections": [
+            { "selector": { "start": null, "end_before": null }, "phase": "initial" }
+          ]
+        },
+        {
+          "path": "src/TASK-INPUT.md",
+          "sections": [
+            { "selector": { "start": null, "end_before": null }, "phase": "deferred" }
+          ]
+        },
+        {
+          "path": "src/ENGINEERING.md",
+          "sections": [
+            { "selector": { "start": null, "end_before": null }, "phase": "deferred" }
+          ]
+        },
+        {
+          "path": "src/README.md",
+          "sections": [
+            { "selector": { "start": null, "end_before": null }, "phase": "deferred" }
+          ]
+        },
+        {
+          "path": "src/ROLE-RUNNER.md",
+          "sections": [
+            { "selector": { "start": null, "end_before": null }, "phase": "deferred" }
+          ]
+        },
+        {
+          "path": "src/PI-LOCK.md",
+          "sections": [
+            { "selector": { "start": null, "end_before": null }, "phase": "deferred" }
+          ]
+        },
+        {
+          "path": "src/OPENCLAW.md",
+          "sections": [
+            { "selector": { "start": null, "end_before": null }, "phase": "deferred" }
+          ]
+        },
+        {
+          "path": "docs_devout/03-execucao/planos/marco-M01.md",
+          "sections": [
+            { "selector": { "start": null, "end_before": null }, "phase": "deferred" }
+          ]
+        }
+      ]
+    },
     "M02-T01": {
       "task": {
         "path": "docs_devout/plano.md",
