@@ -32,8 +32,8 @@ Essas consultas foram usadas na prova histórica; conferir compatibilidade com a
 
 ## Antes de executar código da task
 
-1. Consultar o [registro](../03-execucao/registro.md) e o [AGENTS.md](../../AGENTS.md). O [plano M01 encerrado](../03-execucao/planos/marco-M01.md) é histórico; não há plano ativo. Para nova implementação, exigir plano aprovado em `docs_devout/plano.md`, caminho previsto para o próximo marco.
-2. Confirmar o commit autorizado de baseline do marco a executar. O baseline M01 foi confirmado em `c771c4b39a34716f15728c1e0d5b2596e776bc41`; `e616980` é anterior a ele. Esse baseline histórico não autoriza implementar o M02.
+1. Consultar o [registro](../03-execucao/registro.md), o [AGENTS.md](../../AGENTS.md) e a task atual no [plano ativo M02](../plano.md), aprovado em 2026-11-19. O [plano M01 encerrado](../03-execucao/planos/marco-M01.md) é histórico e não autoriza novas execuções. Na avaliação independente, obter primeiro a entrada filtrada conforme o mapa, sem abrir o plano inteiro ou Observações do registro.
+2. Confirmar no Git o baseline autorizado do marco e a seleção de fontes pertinente, além do estado, das dependências e da branch da task. O baseline M02 (plano, registro, mapa e seleção M02-T01) foi confirmado em `9014b8b116bb6f2bfd3499d50aeef481bc44e7ec`; revalidar sua presença no histórico e preservar alterações intermediárias da task em curso. O baseline M01 em `c771c4b39a34716f15728c1e0d5b2596e776bc41` é histórico e não autoriza implementar o M02.
 3. Preservar alterações preexistentes e usar workspace descartável sem segredos para o Pi experimental.
 4. Se ferramenta, dependência, identidade de processo ou estado Git estiver incerto, registrar o bloqueio; não contornar com alterações de arquitetura ou credenciais.
 
