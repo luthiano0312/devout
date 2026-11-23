@@ -1,9 +1,9 @@
 # Plano de implementação — Devout / M02: Slice 2, implementação e revisão
 
 **Status:** APROVADO em 2026-11-19 — execução condicionada ao commit de baseline do plano, registro, mapa e seleção de fontes da primeira task; não autoriza commits automáticos.
-**Elaboração e aprovação:** 2026-11-19.  
+**Elaboração e aprovação:** 2026-11-19; manutenção corretiva M02-T08 aprovada em 2026-11-23, condicionada a novo baseline documental.
 **Repositório:** `luthiano0312/devout`.  
-**Marco:** `M02` — Slice 2 do contrato de orquestração MVP v1.0.  
+**Marco:** `M02` — Slice 2 do contrato de orquestração MVP v1.0, com manutenção corretiva da exclusividade na M02-T08.
 **Plano oficial do marco:** `docs_devout/plano.md`.  
 **Registro oficial existente:** `docs_devout/03-execucao/registro.md`.  
 **Marco anterior:** `docs_devout/03-execucao/planos/marco-M01.md` — encerrado; M01-T01 a M01-T06 estão `concluída` no registro.
@@ -19,6 +19,7 @@
 - `docs_devout/02-design/contrato-orquestracao-mvp.md` — **contrato v1.0**, especialmente seções 1–4, 6, 7, 10 e 11.
 - `docs_devout/02-design/arquitetura-hld.md` e `docs_devout/02-design/adr/*.md` (ativos) — fronteiras e decisões existentes.
 - `src/ROLE-RUNNER.md`, `src/README.md`, `src/OPENCLAW.md` — interfaces e limitações efetivamente implementadas no Slice 1.
+- `src/PI-LOCK.md#Contrato da recuperação corretiva — M02-T08` — contrato aprovado de identidade nativa de kernel e ancoragem de leases legadas; implementação e qualificação ainda pendentes.
 - `.agents/skills/implement/SKILL.md`, `.agents/skills/implement/references/implementador.md`, `.agents/skills/implement/references/revisor.md`, `.agents/skills/implement/references/entradas-independentes.md` e `.agents/skills/implement/scripts/review_inputs.py` — contratos reais da execução manual, preparação das entradas e revisão independente.
 - `docs_devout/03-execucao/registro.md` e `docs_devout/03-execucao/planos/marco-M01.md` — progresso e histórico.
 
@@ -28,6 +29,18 @@ O plano de M01 está arquivado e este plano M02 ocupa `docs_devout/plano.md` ap�
 
 **Condições de entrada externas:** Windows nativo com Node, Python, OpenClaw e Pi operacional; provedores previamente configurados; projetos/arquivos inteiramente fictícios em área descartável; Git local funcional. Nenhum teste pode exigir segredos, credenciais GitHub remotas, acesso à produção, alterações de configuração global do OpenClaw ou ambientes compartilhados. Os testes que dependem de Gateway/Pi reais serão opt-in e documentarão os requisitos locais, sem assumir sucesso antes de executá-los.
 
+## Manutenção corretiva aprovada em 2026-11-23
+
+A M02-T08 acrescenta uma entrega de manutenção ao M02 em andamento: recuperar com segurança a exclusividade após reboot, sem reabrir o M01 nem substituir a M02-T03. A ordem prática passa a ser M02-T01/T02 (já concluídas), M02-T08, retomada da validação final da M02-T03 e M02-T04–T07. A manutenção não antecipa a recuperação de tasks/registro do Slice 4.
+
+**Decisão aprovada:** leases novas devem registrar identidade nativa de sessão de kernel qualificada no Windows real. O GUID `SYSTEM_BOOT_ENVIRONMENT_INFORMATION.BootIdentifier` não deve ser tratado como identidade exclusiva de cada boot. `KUSER_SHARED_DATA.BootId` é candidato, não solução presumida. Sem fonte/prova confiável, manter o bloqueio.
+
+**Legado:** preservar a lease original; uma operação explícita cria âncora vinculada a token, hash da lease, máquina e identidade qualificada do kernel atual. A âncora não libera a trava nem reconstrói dados históricos. Somente um reboot posterior comprovado permite a reconciliação explícita, sob o guard existente e com nova conferência de token/integridade. Contrato normativo em `src/PI-LOCK.md#Contrato da recuperação corretiva — M02-T08`.
+
+**Preservação da M02-T03:** a R2 permanece incompleta, com uma correção completa; não consumir R3, refazer I1 ou herdar aprovação. A retomada da validação final depende da M02-T08 concluída e de recuperação operacional separadamente autorizada. Revalidar as fontes/entrega alteradas antes de retomar a mesma R2.
+
+**Baseline e autorização:** antes de implementar M02-T08, versionar e conferir o plano replanejado, registro, `AGENTS.md`, seleção M02-T08, reconciliação de `src/PI-LOCK.md` e as evidências anteriores pendentes da R2. O checkpoint de código já existente não é aprovação da M02-T03. Este replanejamento não autoriza implementação nesta conversa, commits, reboot, criação de âncora ou reconciliação da lease operacional. O ensaio exige reboot manual controlado em lease sintética, sem Pi ativo; a recuperação operacional posterior pode exigir outro reboot depois de sua ancoragem.
+
 ## Ordem recomendada e dependências obrigatórias
 
 A ordenação é uma sugestão de execução **sequencial**, não autorização de paralelismo. As dependências abaixo são apenas as que resultam do consumo real de artefatos.
@@ -36,7 +49,8 @@ A ordenação é uma sugestão de execução **sequencial**, não autorização 
 |---|---|---|
 | M02-T01 | — | Habilita ferramentas e repositório fictício dentro do ambiente controlado de testes. |
 | M02-T02 | — | Validação de task e baseline pode ser testada com fixtures, independentemente do perfil Pi; é executada depois por conveniência. |
-| M02-T03 | M02-T01, M02-T02 | Implementador usa ambiente habilitado e entrada previamente validada. |
+| M02-T08 | M01-T03 | Consome a infraestrutura de exclusividade já concluída e corrige sua recuperação após reboot. |
+| M02-T03 | M02-T01, M02-T02, M02-T08 | Entrada/perfil já consumidos; M02-T08 é condição nova para retomar a validação final bloqueada, não gate retroativo da implementação inicial. |
 | M02-T04 | M02-T01, M02-T02, M02-T03 | Revisor usa perfil executável, seleção de fontes e entrega/relatório da implementação. |
 | M02-T05 | M02-T04 | A fase 2 só pode existir após fase 1 persistida e gate válido, no mesmo Pi. |
 | M02-T06 | M02-T03, M02-T05 | Gate de coordenação consome resultados e provas dos dois papéis. |
@@ -87,6 +101,33 @@ A ordenação é uma sugestão de execução **sequencial**, não autorização 
 #### Critério de conclusão
 
 - Uma fixture aprovada gera entrada identificável e verificável para execução; casos inválidos bloqueiam antes de iniciar Pi e não mudam registro, branch nem arquivos do usuário. O gate distingue status oficial da task e resultado técnico do processo.
+
+### M02-T08 — Recuperação segura da exclusividade após reboot
+
+#### Fazer
+
+- Qualificar uma identidade nativa de sessão de kernel: estabilidade no mesmo kernel e distinção após reboot real, sem confundir suspensão/hibernação com término dos processos. O GUID atual não satisfaz essa função; `KUSER_SHARED_DATA.BootId` é candidato a validar, não escolha presumida. Sem fonte/prova confiável, manter o bloqueio e registrar o impedimento.
+- Corrigir captura, persistência e comparação dessa identidade para leases novas, distinguindo o formato legado; não interpretar diferença de formato como novo boot.
+- Implementar ancoragem explícita de leases legadas conforme `src/PI-LOCK.md#Contrato da recuperação corretiva — M02-T08`: preservar dados originais e vincular âncora a token, hash da lease, máquina e identidade qualificada do kernel atual. A âncora não libera a trava; exige reboot posterior comprovado para reconciliação explícita.
+- Manter ancoragem/reconciliação sob a trava existente, com conferência de token, integridade e preservação das evidências; alterações concorrentes ou prova ausente/incerta bloqueiam.
+- Atualizar `src/PI-LOCK.md` e acrescentar testes determinísticos e roteiro opt-in no Windows. Código/testes novos ficam em `src/`, evidências operacionais fora do Git. O ensaio usa lease sintética e reboot manual controlado, sem Pi ativo.
+
+#### Não alterar
+
+- Não liberar diante de identidade/prova incerta nem usar PID, relógio ou autorização textual isolados como prova. `[Fonte: docs_devout/02-design/contrato-orquestracao-mvp.md#Seções 5.2–5.3; docs_devout/02-design/adr/0002-pi-sequencial-exclusivo.md#Decisão]`
+- Não apagar a lease, trocar a raiz para contornar bloqueio ou criar opção genérica de liberação forçada. `[Fonte: src/PI-LOCK.md#Reconciliação explícita; src/PI-LOCK.md#Contrato da recuperação corretiva — M02-T08]`
+- Não reiniciar o Windows automaticamente nem recuperar a lease operacional durante os testes. `[Decisão deste marco: manutenção corretiva aprovada em 2026-11-23]`
+- Não alterar os papéis, a correção I1 ou as contagens da M02-T03. `[Decisão deste marco: manutenção corretiva aprovada em 2026-11-23]`
+
+#### Entregáveis
+
+- Detector e protocolo de recuperação corrigidos, incluindo identidade nativa qualificada e ancoragem explícita de legado.
+- Testes de identidade, legado, token divergente, alteração concorrente, prova ausente e recuperação recusada; ensaio com lease sintética através de reboot real, sem Pi ativo.
+- Documentação em `src/PI-LOCK.md`, relatório da task e evidências sanitizadas; não publicar logs operacionais integrais.
+
+#### Critério de conclusão
+
+- Uma lease sintética incerta continua bloqueada no mesmo kernel e pode ser reconciliada explicitamente após reboot comprovado. A lease legada exige ancoragem íntegra e prova posterior, sem conversão silenciosa. Os testes pertinentes passam e a lease operacional permanece preservada. O roteiro distingue ações manuais do operador e verificações automáticas; não declarar casos não executados como validados.
 
 ### M02-T03 — Role Runner implementador e validação de entrega
 
@@ -201,6 +242,8 @@ A ordenação é uma sugestão de execução **sequencial**, não autorização 
 ## Resultado esperado ao final do M02
 
 Estarão disponíveis no código de `src/` um perfil de Pi capaz de realizar programação em repositório fictício, validação determinística da task/baseline, Role Runner para implementador, Role Runner para revisão em duas fases com gate de persistência e snapshot, validação da decisão técnica e comandos de acompanhamento pelo OpenClaw. Uma prova real no Windows demonstrará a sequência de **dois Pi distintos**, preservando lock/processos, avaliações e relatórios, sem realizar commits de task nem mutar `registro.md` automaticamente. A revisão poderá devolver `changes_required`, mas **não** executará correção ou reauditoria neste marco.
+
+A manutenção M02-T08 acrescentará detector de sessão de kernel qualificado, ancoragem explícita de leases legadas e recuperação verificada em lease sintética após reboot real, sem liberação automática da lease operacional ou avanço da M02-T03.
 
 **Adiamentos justificados:** Slice 3 — corretor, reauditoria, limites R1–R4 e cenário T02; Slice 4 — transições oficiais recuperáveis do registro, idempotência/CAS, reinício técnico seguro e testes T09–T11; Git Gateway/commits automáticos — etapa futura. A restrição de acesso por arquivo continua mitigação sem isolamento forte. Para demonstrar o **T01 integral** do contrato depois, será necessário fazer o registro alcançar `aguardando revisão` mediante o controlador autorizado, além das provas deste marco.
 

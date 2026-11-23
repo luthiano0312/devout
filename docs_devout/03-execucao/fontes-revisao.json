@@ -1,6 +1,133 @@
 {
   "version": 1,
   "tasks": {
+    "M02-T08": {
+      "task": {
+        "path": "docs_devout/plano.md",
+        "selector": { "heading": "### M02-T08 — Recuperação segura da exclusividade após reboot" }
+      },
+      "common": [
+        { "path": "docs_devout/plano.md", "selector": { "start": null, "end_before": "## Recorte e fontes" } },
+        { "path": "docs_devout/plano.md", "selector": { "heading": "## Recorte e fontes" } },
+        { "path": "docs_devout/plano.md", "selector": { "heading": "## Manutenção corretiva aprovada em 2026-11-23" } },
+        { "path": "docs_devout/plano.md", "selector": { "heading": "## Ordem recomendada e dependências obrigatórias" } },
+        { "path": "AGENTS.md", "selector": { "heading": "## Convenções e limites atuais" } },
+        { "path": "AGENTS.md", "selector": { "heading": "## Antes de implementar uma task" } }
+      ],
+      "sources": [
+        {
+          "path": "docs_devout/plano.md",
+          "sections": [
+            { "selector": { "start": null, "end_before": "### M02-T01 — Perfil de Pi para programação em repositório fictício" }, "phase": "initial" },
+            { "selector": { "start": "### M02-T01 — Perfil de Pi para programação em repositório fictício", "end_before": "### M02-T08 — Recuperação segura da exclusividade após reboot" }, "phase": "deferred" },
+            { "selector": { "start": "### M02-T08 — Recuperação segura da exclusividade após reboot", "end_before": "### M02-T03 — Role Runner implementador e validação de entrega" }, "phase": "initial" },
+            { "selector": { "start": "### M02-T03 — Role Runner implementador e validação de entrega", "end_before": null }, "phase": "deferred" }
+          ]
+        },
+        {
+          "path": "AGENTS.md",
+          "sections": [
+            { "selector": { "start": null, "end_before": "## Diagnóstico e testes" }, "phase": "initial" },
+            { "selector": { "start": "## Diagnóstico e testes", "end_before": "## Antes de implementar uma task" }, "phase": "deferred" },
+            { "selector": { "start": "## Antes de implementar uma task", "end_before": null }, "phase": "initial" }
+          ]
+        },
+        {
+          "path": "src/PI-LOCK.md",
+          "sections": [
+            { "selector": { "start": null, "end_before": "## Contrato da recuperação corretiva — M02-T08" }, "phase": "deferred" },
+            { "selector": { "start": "## Contrato da recuperação corretiva — M02-T08", "end_before": "## Diagnóstico do detector legado" }, "phase": "initial" },
+            { "selector": { "start": "## Diagnóstico do detector legado", "end_before": null }, "phase": "deferred" }
+          ]
+        },
+        {
+          "path": "docs_devout/02-design/contrato-orquestracao-mvp.md",
+          "sections": [
+            { "selector": { "start": null, "end_before": "## 1. Objetivo, limites e fontes" }, "phase": "deferred" },
+            { "selector": { "start": "## 1. Objetivo, limites e fontes", "end_before": "## 6. Três níveis de estado e resultados" }, "phase": "initial" },
+            { "selector": { "start": "## 6. Três níveis de estado e resultados", "end_before": "## 9. Falhas e recuperação" }, "phase": "deferred" },
+            { "selector": { "start": "## 9. Falhas e recuperação", "end_before": "No experimento E14," }, "phase": "initial" },
+            { "selector": { "start": "No experimento E14,", "end_before": "Usar somente dados fictícios," }, "phase": "deferred" },
+            { "selector": { "start": "Usar somente dados fictícios,", "end_before": "## 10. Critérios de aceite" }, "phase": "initial" },
+            { "selector": { "start": "## 10. Critérios de aceite", "end_before": null }, "phase": "deferred" }
+          ]
+        },
+        {
+          "path": "docs_devout/02-design/arquitetura-hld.md",
+          "sections": [
+            { "selector": { "start": null, "end_before": "A topologia e a tabela descrevem" }, "phase": "initial" },
+            { "selector": { "start": "A topologia e a tabela descrevem", "end_before": "## Processos, estado e persistência" }, "phase": "deferred" },
+            { "selector": { "start": "## Processos, estado e persistência", "end_before": "## Validação realizada e limites pendentes" }, "phase": "initial" },
+            { "selector": { "start": "## Validação realizada e limites pendentes", "end_before": null }, "phase": "deferred" }
+          ]
+        },
+        {
+          "path": "docs_devout/02-design/adr/0001-runner-temporario-windows-rpc.md",
+          "sections": [
+            { "selector": { "start": null, "end_before": "## Contexto" }, "phase": "initial" },
+            { "selector": { "start": "## Contexto", "end_before": "## Decisão" }, "phase": "deferred" },
+            { "selector": { "start": "## Decisão", "end_before": null }, "phase": "initial" }
+          ]
+        },
+        {
+          "path": "docs_devout/02-design/adr/0002-pi-sequencial-exclusivo.md",
+          "sections": [
+            { "selector": { "start": null, "end_before": "## Contexto" }, "phase": "initial" },
+            { "selector": { "start": "## Contexto", "end_before": "## Decisão" }, "phase": "deferred" },
+            { "selector": { "start": "## Decisão", "end_before": null }, "phase": "initial" }
+          ]
+        },
+        {
+          "path": "docs_devout/02-design/adr/0003-isolamento-forte-adiado-no-mvp.md",
+          "sections": [
+            { "selector": { "start": null, "end_before": "## Contexto" }, "phase": "initial" },
+            { "selector": { "start": "## Contexto", "end_before": "## Decisão" }, "phase": "deferred" },
+            { "selector": { "start": "## Decisão", "end_before": null }, "phase": "initial" }
+          ]
+        },
+        {
+          "path": "docs_devout/01-requisitos/escopo.md",
+          "sections": [
+            { "selector": { "start": null, "end_before": "### Entrega encerrada — M01 / Slice 1" }, "phase": "initial" },
+            { "selector": { "start": "### Entrega encerrada — M01 / Slice 1", "end_before": "## Fora do MVP imediato" }, "phase": "deferred" },
+            { "selector": { "start": "## Fora do MVP imediato", "end_before": "- O baseline M01 foi conferido" }, "phase": "initial" },
+            { "selector": { "start": "- O baseline M01 foi conferido", "end_before": null }, "phase": "deferred" }
+          ]
+        },
+        {
+          "path": ".agents/skills/implement/SKILL.md",
+          "sections": [{ "selector": { "start": null, "end_before": null }, "phase": "initial" }]
+        },
+        {
+          "path": ".agents/skills/implement/references/implementador.md",
+          "sections": [{ "selector": { "start": null, "end_before": null }, "phase": "initial" }]
+        },
+        {
+          "path": ".agents/skills/implement/references/entradas-independentes.md",
+          "sections": [{ "selector": { "start": null, "end_before": null }, "phase": "initial" }]
+        },
+        {
+          "path": "src/package.json",
+          "sections": [{ "selector": { "start": null, "end_before": null }, "phase": "initial" }]
+        },
+        {
+          "path": "src/README.md",
+          "sections": [{ "selector": { "start": null, "end_before": null }, "phase": "deferred" }]
+        },
+        {
+          "path": "src/ROLE-RUNNER.md",
+          "sections": [{ "selector": { "start": null, "end_before": null }, "phase": "deferred" }]
+        },
+        {
+          "path": "src/OPENCLAW.md",
+          "sections": [{ "selector": { "start": null, "end_before": null }, "phase": "deferred" }]
+        },
+        {
+          "path": "docs_devout/how-to/diagnosticar-ambiente-windows.md",
+          "sections": [{ "selector": { "start": null, "end_before": null }, "phase": "deferred" }]
+        }
+      ]
+    },
     "M02-T03": {
       "task": {
         "path": "docs_devout/plano.md",

@@ -1,4 +1,6 @@
-# Exclusividade de Pi — M01-T03
+# Exclusividade de Pi — M01-T03 e manutenção M02-T08
+
+**Situação em 2026-11-23:** a recuperação por identidade de boot da implementação legada tem uma premissa inválida. O contrato corretivo abaixo foi aprovado para M02-T08, mas ainda não está implementado. Não tratar um novo reboot, por si só, como liberação da lease existente.
 
 ## Escopo e uso
 
@@ -108,10 +110,13 @@ filesystem Windows **local**, diretório confiável e permissões restritas à c
    - `acquired`, sem intenção de lançamento: nenhum Pi pôde ser criado pela interface;
    - recibo `terminated` durável e vinculado à identidade (ou `neverLaunched`), cobrindo
      falha entre persistência de término e arquivamento;
-   - **novo boot de kernel na mesma máquina Windows**: todos os processos daquele
-     boot anterior terminaram. Usa GUID de `SystemBootEnvironmentInformation` e
-     MachineGuid, não relógio, PID isolado ou arquivo de lock. Registro de outra
-     máquina não é prova. Retorno de suspensão/hibernação não equivale a novo boot.
+   - **novo boot de kernel na mesma máquina Windows**, quando comprovado por identidade
+     nativa qualificada: todos os processos daquele kernel anterior terminaram. O GUID
+     `SystemBootEnvironmentInformation.BootIdentifier` usado pelo código legado **não**
+     identifica exclusivamente cada boot; não usar esse GUID ou o motivo legado
+     `PRIOR_BOOT_ENDED` isoladamente como prova operacional. A correção é a M02-T08,
+     ainda pendente. Relógio, PID isolado, arquivo de lock ou registro de outra máquina
+     não são prova. Retorno de suspensão/hibernação não equivale a novo boot.
 5. Após conferir a prova, chamar explicitamente:
 
    ```js
@@ -125,9 +130,10 @@ filesystem Windows **local**, diretório confiável e permissões restritas à c
 **Limite deliberado:** após crash durante `launching`/`running`/`uncertain`, sem
 recibo de árvore vazia, não há prova completa da árvore no mesmo boot. Nem owner
 morto, nem lista de PIDs observados ausente autoriza limpar. O módulo mantém o
-bloqueio; preservar diagnóstico e combinar com o operador uma reinicialização
-real do Windows, depois verificar e reconciliar explicitamente. Isso é recuperação
-conservadora, não reboot/restart automático. Metadados corrompidos ou máquina
+bloqueio; preservar diagnóstico. Na implementação legada, repetir uma reinicialização
+real do Windows pode manter o mesmo GUID e não viabiliza a recuperação. A M02-T08
+qualificará a prova e o procedimento de ancoragem antes de qualquer reboot preparado
+para esse fim. A recuperação será explícita, não reboot/restart automático. Metadados corrompidos ou máquina
 incompatível continuam bloqueados: exigem investigação humana, não `rm lease.json`
 nem uma nova raiz para ignorar a incerteza.
 
@@ -140,3 +146,69 @@ Pi **falso**; os demais não lançam. Término verificado admite uma nova invoca
 Outros testes matam o Node proprietário antes/depois do lançamento, verificam bloqueio,
 reconciliação concorrente e identidade nativa. Não reinicializam o Windows: a prova
 de novo boot é exercitada por costura determinística, não por reboot real do host.
+Esses testes não qualificam a semântica do GUID nativo. A M02-T08 exige ensaio real
+com lease sintética, sem Pi ativo, e preservação da lease operacional.
+
+## Contrato da recuperação corretiva — M02-T08
+
+**Aprovado em 2026-11-23; implementação e qualificação pendentes.** Este contrato
+mantém a exclusividade da ADR-0002 e delimita a manutenção no plano M02 ativo.
+Não afirma que a API atual já implemente ancoragem ou o novo detector.
+
+- **Leases novas:** registrar identidade nativa de sessão de kernel qualificada no
+  Windows real, vinculada à máquina e identificada quanto ao formato/fonte. Deve
+  permanecer estável no mesmo kernel e distinguir reboot real sem confundir
+  suspensão/hibernação com término dos processos. `KUSER_SHARED_DATA.BootId` é
+  candidato a validar, não escolha presumida; GUID de entrada do Windows não basta.
+  Ausência de fonte/prova confiável mantém o bloqueio.
+- **Legado:** preservar os dados originais da lease. Uma operação explícita cria
+  âncora vinculada ao token, hash da lease, máquina e identidade qualificada do
+  kernel atual. Não substituir a identidade histórica pelo valor atual, reconstruir
+  dados que não foram coletados ou comparar formatos diferentes como se provassem
+  um novo boot. A âncora estabelece um ponto novo para observação, não uma prova
+  retroativa.
+- **Prova posterior:** a criação da âncora não libera a trava. Somente um reboot
+  posterior comprovado pelo detector qualificado permite reconciliar explicitamente
+  o legado, com nova conferência da âncora e lease. Reboot anterior à âncora não
+  satisfaz essa condição. Se a prova for insuficiente, continuar bloqueado.
+- **Serialização e integridade:** usar o guard existente na criação da âncora e na
+  reconciliação; conferir token e integridade da lease/âncora, preservar evidências e
+  verificar ausência comprovada do proprietário. Token divergente, mudança concorrente,
+  identidade ambígua ou falha de leitura/persistência não podem liberar a trava.
+- **Sem atalhos:** não apagar a lease, trocar a raiz para ignorar um bloqueio ou
+  introduzir liberação forçada genérica. PID, relógio ou autorização textual isolados
+  não provam encerramento do kernel/árvore. Ancoragem e reconciliação são operações
+  explícitas e separadas de aquisição ou reinício de task.
+- **Validação e operação:** testes determinísticos e roteiro opt-in com lease
+  sintética antes/depois de reboot real, sem Pi ativo. O operador realiza os reboots;
+  não automatizá-los nem recuperar a lease operacional durante os testes. Documentar
+  identidade, legado, token divergente, concorrência, prova ausente e recusas. Casos
+  não executados não são evidências positivas.
+- **Fronteira de autorização:** entregar/revisar a M02-T08 não autoriza recuperar a
+  lease operacional. Essa ação posterior exige autorização separada e poderá exigir
+  outro reboot depois da ancoragem. Preservar a M02-T03, sua I1, R2 incompleta e
+  contagem de uma correção; a manutenção não conclui nem reinicia essa task.
+
+## Diagnóstico do detector legado
+
+Em 2026-11-23, a inspeção posterior à reinicialização manteve `PROCESS_TREE_UNCERTAIN`:
+lease antiga e helper nativo retornaram o mesmo `BootIdentifier`, enquanto CIM e
+os eventos Kernel-General ID 12 registraram novas inicializações. O campo identifica
+qual entrada/instalação Windows foi inicializada; não fornece a mudança por reboot
+assumida pelo detector legado. O mock de IDs distintos cobre a política JavaScript,
+não a fonte nativa.
+
+Evidências e limites estão no apêndice de diagnóstico de
+`docs_devout/03-execucao/achados/task-M02-T03-revisao-2.md` (R2 incompleta). A causa
+original da falha que gerou a lease continua não determinada; corrigir a prova de
+boot não equivale a resolver essa falha de lançamento.
+
+Referências consultadas para o diagnóstico:
+
+- https://www.geoffchappell.com/studies/windows/km/ntoskrnl/inc/api/ntexapi/system_boot_environment_information.htm
+- https://raw.githubusercontent.com/winsiderss/phnt/master/ntexapi.h
+- https://learn.microsoft.com/en-us/windows-hardware/drivers/ddi/ntddk/ns-ntddk-kuser_shared_data
+
+A documentação de `KUSER_SHARED_DATA.BootId` o descreve como sequência incrementada
+pelo loader a cada tentativa de boot; isso não substitui a qualificação exigida para
+recuperação segura. Nenhuma dessas consultas alterou a lease ou implementou a M02-T08.
