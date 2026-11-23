@@ -13,15 +13,37 @@ public static class DevoutLockIdentity {
   [DllImport("kernel32.dll", SetLastError=true, CharSet=CharSet.Unicode)] static extern bool QueryFullProcessImageName(IntPtr p, int f, StringBuilder b, ref int n);
   [DllImport("kernel32.dll")] static extern uint WaitForSingleObject(IntPtr h, uint ms);
   [DllImport("kernel32.dll")] static extern bool CloseHandle(IntPtr h);
-  [DllImport("ntdll.dll")] static extern int NtQuerySystemInformation(int c, IntPtr b, int n, out int used);
-  public static string BootId() {
-    IntPtr b = Marshal.AllocHGlobal(64);
-    try {
-      int used;
-      // SystemBootEnvironmentInformation starts with the kernel boot GUID.
-      if (NtQuerySystemInformation(90,b,64,out used)!=0 || used<16) throw new InvalidOperationException();
-      return ((Guid)Marshal.PtrToStructure(b,typeof(Guid))).ToString();
-    } finally { Marshal.FreeHGlobal(b); }
+  [StructLayout(LayoutKind.Sequential, CharSet=CharSet.Unicode)]
+  struct Version {
+    public uint Size, Major, Minor, Build, Platform;
+    [MarshalAs(UnmanagedType.ByValTStr, SizeConst=128)] public string ServicePack;
+  }
+  [StructLayout(LayoutKind.Sequential)]
+  struct SystemInfo {
+    public ushort Architecture, Reserved;
+    public uint PageSize;
+    public IntPtr MinimumAddress, MaximumAddress, ProcessorMask;
+    public uint ProcessorCount, ProcessorType, AllocationGranularity;
+    public ushort ProcessorLevel, ProcessorRevision;
+  }
+  [DllImport("kernel32.dll")] static extern void GetNativeSystemInfo(out SystemInfo info);
+  [DllImport("ntdll.dll", CharSet=CharSet.Unicode)] static extern int RtlGetVersion(ref Version version);
+  public static uint[] BootId() {
+    // Same native fields/offsets as the independently measured candidate probe.
+    SystemInfo system; GetNativeSystemInfo(out system);
+    if (IntPtr.Size != 8 || system.Architecture != 9 ||
+        Environment.GetEnvironmentVariable("PROCESSOR_ARCHITECTURE") != "AMD64")
+      throw new InvalidOperationException("Unqualified architecture");
+    var v = new Version(); v.Size = (uint)Marshal.SizeOf(typeof(Version));
+    if (RtlGetVersion(ref v) != 0 || v.Major != 10 || v.Minor != 0 || v.Build != 19045)
+      throw new InvalidOperationException("Unqualified Windows build");
+    var page = new IntPtr(0x7ffe0000L);
+    uint build = unchecked((uint)Marshal.ReadInt32(page, 0x260)) & 0x0fffffffU;
+    if (build != v.Build) throw new InvalidOperationException("Shared page layout mismatch");
+    uint first = unchecked((uint)Marshal.ReadInt32(page, 0x2c4));
+    uint second = unchecked((uint)Marshal.ReadInt32(page, 0x2c4));
+    if (first != second) throw new InvalidOperationException("Unstable kernel identity");
+    return new uint[] { first, build };
   }
   public static string[] Read(int pid) {
     IntPtr p=OpenProcess(0x101000,false,pid); // query limited information + synchronize
@@ -68,7 +90,11 @@ try {
   if ($value[2] -ne 'alive') { throw 'owner' }
   $machine = [Microsoft.Win32.Registry]::GetValue('HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Cryptography', 'MachineGuid', $null)
   if ([string]::IsNullOrEmpty($machine)) { throw 'machine identity' }
-  $data = @{ owner = @{ pid = [int]$q.pid; created = $value[0]; image = $value[1] }; boot = @{ machine = [string]$machine; id = [DevoutLockIdentity]::BootId() } }
+  $kernel = [DevoutLockIdentity]::BootId()
+  $data = @{ owner = @{ pid = [int]$q.pid; created = $value[0]; image = $value[1] }; boot = @{
+    machine = [string]$machine; id = $kernel[0].ToString([Globalization.CultureInfo]::InvariantCulture)
+    source = 'windows-kuser-shared-data-bootid-v1'; architecture = 'AMD64'; build = [int]$kernel[1]
+  } }
   [Console]::WriteLine((@{ id = 0; ok = $true; data = $data } | ConvertTo-Json -Depth 5 -Compress))
   while ($null -ne ($line = [Console]::ReadLine())) {
     $q = $line | ConvertFrom-Json

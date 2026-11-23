@@ -1,0 +1,92 @@
+M02-T08 — coleta opt-in de observações do candidato nativo
+
+O protocolo de produção já foi implementado e tem roteiro separado em
+src/test/lock-recovery-procedure.txt. Este coletor mantém qualified:false:
+NÃO qualifica automaticamente a fonte nem executa ancoragem/reconciliação.
+Não autoriza recuperar a lease operacional ou retomar a R2 da M02-T03.
+Não executar comandos de reconciliação do guia legado neste ensaio.
+
+Pré-condições (operador):
+- Windows 10/11 AMD64 nativo, Node >=22.19, PowerShell/CIM/Event Log disponíveis.
+- Parar despachos do workflow; nenhum Pi do workflow ativo. Os comandos abaixo
+  nunca iniciam Pi. Não confundir o término do coletor com término de uma árvore Pi.
+- Salvar o trabalho e obter autorização para ações manuais de energia. NENHUM
+  comando deste roteiro reinicia, suspende ou hiberna o Windows automaticamente.
+- Não apagar/editar leases, guard, manifesto ou observações; não trocar a raiz
+  operacional. O roteiro só cria sua própria fixture sintética em %TEMP%, fora
+  do Git. Lê apenas o hash da lease operacional para verificar preservação.
+- Conferir, se necessário, `powercfg.exe /a` (consulta, não muda configuração).
+  S3/hibernação indisponível não é teste aprovado. Não habilitar recursos globais
+  nem substituir por modern standby para obter um resultado positivo artificial.
+
+Comandos automáticos (PowerShell, a partir da raiz do repositório):
+
+1. Criar fixture NOVA, sintética, sem Pi nem Driver:
+   node src/test/qualify-kernel.mjs prepare
+
+   Copiar o campo root da saída. O preparo captura duas leituras independentes,
+   cria lease incerta schema 1 sob o guard nativo e preserva o hash operacional.
+   Seu id legado é um UUID ARTIFICIAL, sem source nativa, não uma identidade
+   histórica observada. Máquina é a do guard; candidato real fica nas observações.
+   A fixture não recebe âncora e NÃO deve ser usada no ensaio de recuperação.
+   Nunca passar a raiz operacional como argumento. Exemplo de variável:
+   $q = 'C:\Users\<usuario>\AppData\Local\Temp\devout-kernel-qualification-XXXXXX'
+
+2. Confirmar em OUTRA invocação Node, sem reiniciar a máquina:
+   node src/test/qualify-kernel.mjs same-kernel "$q"
+
+3. Capturar ANTES de suspender:
+   node src/test/qualify-kernel.mjs before-suspend "$q"
+   OPERADOR: suspender manualmente em S3 e depois retornar.
+   node src/test/qualify-kernel.mjs after-suspend "$q"
+
+4. Capturar ANTES de hibernar:
+   node src/test/qualify-kernel.mjs before-hibernate "$q"
+   OPERADOR: hibernar manualmente e depois retornar.
+   node src/test/qualify-kernel.mjs after-hibernate "$q"
+
+5. Capturar ANTES do reboot real:
+   node src/test/qualify-kernel.mjs before-reboot "$q"
+   OPERADOR: salvar trabalho, fechar agentes/controladores e reiniciar manualmente
+   usando Reiniciar do Windows (não desligamento híbrido/Fast Startup).
+   Depois, abrir PowerShell, voltar à raiz do repo e repor $q com O MESMO caminho.
+   node src/test/qualify-kernel.mjs after-reboot "$q"
+
+Os passos 3/4 exigem novo par de eventos Kernel-Power 42/107 com TargetState e
+EffectiveState S3=4 ou Hibernate=5. Prova ausente/fallback diferente: comando falha,
+caso permanece não validado. Não alterar JSONs nem o coletor para forçar aprovação.
+O reboot exige diferença do candidato E mudança corroborante de CIM LastBootUpTime
+E Kernel-General 12. Relógio/eventos isolados NÃO autorizam liberação de processo.
+Mudança de máquina/build/fonte também bloqueia, não equivale a um reboot válido.
+
+Resultado e limites:
+- O probe é limitado a Windows 10/11 AMD64 e compara layout/build da página nativa.
+- `qualified:false` é INTENCIONAL em todas as saídas, inclusive após os casos
+  observados. O roteiro mede expectativas; não aprova a fonte para produção.
+- A lease legada sintética deve permanecer bloqueada/intacta em TODOS os passos,
+  inclusive após reboot, pois não tem âncora. O protocolo de produção recusa
+  inferir reboot a partir do UUID artificial ou misturar identidade nativa/schema 1.
+- Metadados/observações imutáveis: arquivos de mesmo nome não são sobrescritos.
+  Hashes das fontes ficam no manifesto e são reconferidos; não editar o código
+  entre as ações. Mudança de código invalida a continuidade da coleta.
+  Em falha, preservar a pasta e informar o código; não resetar a fixture para
+  ocultar um caso negativo. Evidências ficam fora do Git; não publicar logs brutos.
+- A coleta histórica de 2026-11-23 (mesmo kernel/S3/hibernação/reboot) antecede
+  a integração final do detector. Evidências e hashes originais estão preservados
+  fora do Git e resumidos no relatório M02-T08; não reaplicar seu manifesto ao
+  checkout corrigido. A correção R1 alterou qualify-kernel.mjs e portanto seu hash.
+  Para nova coleta, criar fixture NOVA e usar apenas seu próprio manifesto;
+  não editar/reutilizar fixtures históricas. O ajuste de formato não exige repetir
+  ações de energia já documentadas: prepare + same-kernel validam-no sem reboot.
+- Detector/ancoragem atuais limitam a fonte aceita a Windows 10 AMD64 build 19045;
+  observações deste probe não ampliam essa aceitação a outros contextos.
+- O ensaio fim a fim de ancoragem + reboot posterior + reconciliação EXPLÍCITA
+  tem fixture/roteiro próprios em lock-recovery-procedure.txt e execução histórica
+  registrada no relatório. Não o repetir sobre fixtures concluídas.
+  Este roteiro de qualificação sozinho NÃO satisfaz o critério final da M02-T08.
+- Recuperação operacional posterior exige autorização separada e pode exigir
+  outro reboot, DEPOIS da sua ancoragem; nenhum reboot aqui libera a lease real.
+
+Evidências: manifest.json e <acao>.json na fixture. O manifesto contém hashes,
+identidade de máquina/kernel e observações sanitizadas de boot/energia. Não usar
+este diretório como nova raiz de workflow nem iniciar Pi nele.

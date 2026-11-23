@@ -277,7 +277,8 @@ test('uncertain cancelled Driver keeps the real lease policy blocking further la
   const dependencies = { openGuard: async () => {
     if (held) throw Object.assign(new Error(), { code: 'LOCK_BUSY' });
     held = true;
-    return { owner, boot: { machine: 'test', id: 'boot' }, check: async () => {}, probe: async () => 'gone',
+    return { owner, boot: { machine: 'test', id: '1', source: 'windows-kuser-shared-data-bootid-v1',
+      architecture: 'AMD64', build: 19045 }, check: async () => {}, probe: async () => 'gone',
       close: async () => { held = false; } };
   } };
   mock.d.ready = Promise.resolve(); mock.d.processTree = { identity };

@@ -1,0 +1,80 @@
+M02-T08 — ensaio fim a fim OPT-IN de recuperação após reboot
+
+Este ensaio NÃO é a coleta anterior de qualificação. A coleta S3/hibernação/reboot
+foi preservada separadamente; não repetir seus comandos nem editar seus JSONs.
+O protocolo novo usa outra fixture, inteiramente sintética, com duas leases: schema
+2 nativa e schema 1 legada. Isso NÃO troca a raiz operacional nem autoriza iniciar
+Pi em outra raiz para contornar bloqueio.
+
+Pré-condições do operador:
+- Windows 10 AMD64 nativo build 19045 (contexto qualificado nesta entrega).
+  Outros contextos falham sem fallback. Fonte/build incerto não autoriza liberação.
+- Nenhum Pi do workflow ativo; parar despachos e salvar o trabalho. Não executar
+  smokes reais ou recuperar a lease operacional durante este ensaio.
+- Node >=22.19, PowerShell nativo/CIM/Event Log disponíveis; filesystem local.
+- Não editar código entre preparo e coleta final: hashes das fontes são fixados.
+- A reinicialização será MANUAL. O roteiro nunca chama shutdown/restart/suspend.
+  Não reiniciar até obter readyForManualReboot:true. Não apagar/editar leases,
+  guard, âncoras, manifestos ou temporários; preservar erros e pedir diagnóstico.
+
+Comandos (PowerShell, na raiz do repo):
+
+1. Criar fixture nova, sintética, sem Pi ou Driver:
+   node src/test/smoke-lock-recovery.mjs prepare
+
+   Copiar o campo root da saída para $r. Exemplo (usar o caminho REAL da saída):
+   $r = 'C:\Users\<usuario>\AppData\Local\Temp\devout-recovery-smoke-XXXXXX'
+
+   Um worker Node cria os dados sintéticos sob guards nativos e termina. Isso
+   permite observar ausência real do proprietário sem iniciar qualquer Pi.
+   A lease nativa registra schema 2; a legada mantém schema 1/identidade histórica.
+   As duas precisam continuar bloqueadas. O hash da lease operacional só é lido.
+
+2. Criar âncora SOMENTE na lease sintética legada:
+   node src/test/smoke-lock-recovery.mjs anchor "$r"
+
+   Resultado esperado: anchored:true, syntheticBlocked:true,
+   operationalPreserved:true. A âncora não substitui a lease nem permite liberar
+   no mesmo kernel. O script fixa seu hash em anchored.json.
+
+3. Conferir ambas e preparar reboot:
+   node src/test/smoke-lock-recovery.mjs before-reboot "$r"
+
+   Prosseguir SOMENTE se readyForManualReboot:true, syntheticBlocked:true e
+   operationalPreserved:true. Esse passo grava ready.json, não reinicia nada.
+
+4. OPERADOR: salvar o trabalho, encerrar agentes/controladores e confirmar que não
+   há Pi do workflow ativo. Reiniciar MANUALMENTE pelo menu Reiniciar do Windows
+   (não Desligar/Fast Startup, Suspender ou Hibernar).
+
+5. Após reiniciar, voltar à raiz do repo e restaurar $r com o MESMO caminho.
+   cd C:\Users\User\projetos\devout
+   $r = '<caminho real preservado do passo 1>'
+   node src/test/smoke-lock-recovery.mjs after-reboot "$r"
+
+   Essa é a operação EXPLÍCITA de reconciliação das DUAS LEASES SINTÉTICAS. O
+   argumento só aceita a fixture identificada em %TEMP%; a raiz operacional não
+   é aceita. O script primeiro confere hashes/fontes/âncora/lease, owner ausente,
+   fonte nativa e kernel posterior; CIM/evento corroboram o reboot do ensaio.
+   Só então chama reconcilePiLock para as duas fixtures.
+
+   Esperado: syntheticReconciled:true, originalLeasesPreserved:true,
+   anchorPreserved:true, operationalPreserved:true, piLaunched:false.
+   Cada original vai para retired-<token>.json com bytes intactos. Provas ficam
+   em reconciliation-<token>-<uuid>.json e a âncora original permanece preservada.
+   Não é feita aquisição/lançamento Pi para provar disponibilidade: só inspeção.
+
+Em QUALQUER erro: parar. Não repetir reboot, não apagar evidência nem recriar a
+fixture para obter um resultado positivo artificial. Informar código e preservedRoot.
+Falha parcial pode ter reconciliado apenas uma fixture: preservar ambas, sem retry
+cego. Nenhuma recusa autoriza liberação forçada ou mudança de raiz operacional.
+
+O agente só poderá encaminhar M02-T08 para revisão após conferir esses artefatos,
+os testes e os requisitos restantes. Recuperação da lease operacional exige outra
+autorização, após conclusão da M02-T08, e poderá precisar de outro reboot DEPOIS
+DA SUA PRÓPRIA ÂNCORA. Este reboot sintético não serve retroativamente para ela.
+A R2 da M02-T03 não é retomada por nenhum comando deste roteiro.
+
+Artefatos fora do Git: manifest.json, anchored.json, ready.json,
+observed-after-reboot.json, completed.json e subpastas native/legacy. Preservar;
+versionar só resumos sanitizados, nunca logs operacionais integrais.

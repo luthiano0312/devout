@@ -26,7 +26,8 @@ async function setup(t) {
 // Trusted seams test policy only; Windows tests below use real native guards,
 // actual process identities and independent Node invocations.
 function model() {
-  const state = { held: false, ownerStatus: 'gone', boot: { machine: 'machine', id: 'boot-1' } };
+  const state = { held: false, ownerStatus: 'gone', boot: { machine: 'machine', id: '1',
+    source: 'windows-kuser-shared-data-bootid-v1', architecture: 'AMD64', build: 19045 } };
   const dependencies = { openGuard: async () => {
     if (state.held) throw Object.assign(new Error(), { code: 'LOCK_BUSY' });
     state.held = true;
@@ -126,19 +127,38 @@ test('PID reuse proves old owner absent, not a launched tree gone', async t => {
   assert.equal((await inspectPiLock({ root }, dependencies)).canReconcile, false);
 });
 
-test('new kernel boot of the SAME machine is explicit proof for an uncertain old tree', async t => {
+test('changed legacy boot GUID never proves an uncertain tree terminated, even on the same machine', async t => {
   const root = await setup(t), { state, dependencies } = model();
   const lease = await acquirePiLock({ root, runId: 'crashed' }, dependencies);
   await lease.launch({}, () => driver());
   await lease.abandon();
+  const legacy = lease.metadata;
+  legacy.schema = 1; legacy.boot = { machine: 'machine', id: 'old-guid' };
+  await writeFile(join(root, 'lease.json'), JSON.stringify(legacy));
   state.boot = { machine: 'different-machine', id: 'boot-2' };
   assert.equal((await inspectPiLock({ root }, dependencies)).canReconcile, false);
   state.boot = { machine: 'machine', id: 'boot-2' };
   const assessment = await inspectPiLock({ root }, dependencies);
-  assert.equal(assessment.reason, 'PRIOR_BOOT_ENDED');
-  assert.equal((await reconcilePiLock({ root, expectedToken: lease.token }, dependencies)).reconciled, true);
-  assert.equal((await inspectPiLock({ root }, dependencies)).canAcquire, true);
+  assert.equal(assessment.reason, 'PROCESS_TREE_UNCERTAIN');
+  assert.equal(assessment.canReconcile, false);
+  await assert.rejects(reconcilePiLock({ root, expectedToken: lease.token }, dependencies), code('LOCK_RECONCILIATION_UNPROVEN'));
+  assert.equal((await inspectPiLock({ root }, dependencies)).canAcquire, false);
 });
+
+for (const ownerStatus of ['alive', 'unknown', 'gone', 'reused']) {
+  test(`legacy/unknown source changes with owner ${ownerStatus} never authorize recovery`, async t => {
+    const root = await setup(t), { state, dependencies } = model();
+    const lease = await acquirePiLock({ root, runId: 'unqualified-source' }, dependencies);
+    await lease.launch({}, () => driver());
+    await lease.abandon();
+    const original = await readFile(join(root, 'lease.json'), 'utf8');
+    state.ownerStatus = ownerStatus;
+    state.boot = { machine: 'machine', id: 'new-value', source: 'unqualified', qualified: true };
+    assert.equal((await inspectPiLock({ root }, dependencies)).canReconcile, false);
+    await assert.rejects(reconcilePiLock({ root, expectedToken: lease.token }, dependencies), code('LOCK_RECONCILIATION_UNPROVEN'));
+    assert.equal(await readFile(join(root, 'lease.json'), 'utf8'), original);
+  });
+}
 
 test('durable termination receipt recovers a crash between termination and retirement', async t => {
   const root = await setup(t), { dependencies } = model();
